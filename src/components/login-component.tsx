@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bird, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthFormData, authSchema } from "./schemas/auth-schema";
+import Image from "next/image";
 
 interface LoginComponentProps {
   setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
@@ -41,7 +42,7 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
       <div className="flex justify-center mb-6 mt-8">
         <div className="relative">
           <div className="bg-gradient-to-r from-gray-800 to-black p-4 rounded-2xl shadow-2xl border border-gray-700/50">
-            <Bird className="h-8 w-8 text-green-400" />
+            <Image src="/images/logo.png" alt="logo" width={70} height={70} priority />
           </div>
           <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/25">
             <div className="w-2 h-2 bg-black rounded-full"></div>
