@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Lock } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
@@ -23,10 +23,7 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const form = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
-    defaultValues: {
-      email: mockLogin.email,
-      senha: mockLogin.senha,
-    },
+    defaultValues: mockLogin,
   });
 
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -65,11 +62,14 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-gray-200">Email</FormLabel>
                       <FormControl>
-                        <Input
-                          className="pl-10 h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-600 text-white placeholder:text-gray-500 transition-all duration-200"
-                          placeholder="Insira seu email"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+                          <Input
+                            className="pl-10 h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-600 text-white placeholder:text-gray-500 transition-all duration-200"
+                            placeholder="Insira seu email"
+                            {...field}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage className="text-red-400 mt-1" />
                     </FormItem>
@@ -83,11 +83,15 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-gray-200">Senha</FormLabel>
                       <FormControl>
-                        <Input
-                          className="pl-10 h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-600 text-white placeholder:text-gray-500 transition-all duration-200"
-                          placeholder="Insira sua senha"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+
+                          <Input
+                            className="pl-10 h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-600 text-white placeholder:text-gray-500 transition-all duration-200"
+                            placeholder="Insira sua senha"
+                            {...field}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage className="text-red-400 mt-1" />
                     </FormItem>
