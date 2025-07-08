@@ -9,6 +9,8 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthFormData, authSchema } from "./schemas/auth-schema";
 import Image from "next/image";
+import { useSessionContext } from "@/app/contexts/session-context";
+import { useRouter } from "next/navigation";
 
 interface LoginComponentProps {
   setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
@@ -21,6 +23,9 @@ const mockLogin = {
 
 export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { setSession } = useSessionContext();
+  const router = useRouter();
+
   const form = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
     defaultValues: mockLogin,
@@ -31,6 +36,8 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
     setIsLoading(true);
     console.log(data);
     await sleep(2000);
+    setSession({ nome: "dodo", email: "dodo@example.com", token: "123" });
+    await router.push("/dashboard");
     setIsLoading(false);
   };
 
