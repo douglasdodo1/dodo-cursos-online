@@ -36,7 +36,7 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
     setIsLoading(true);
     console.log(data);
     await sleep(2000);
-    setSession({ nome: "dodo", email: "dodo@example.com", token: "123" });
+    setSession({ id: 1, nome: "dodo", email: "dodo@example.com", token: "123" });
     await router.push("/dashboard");
     setIsLoading(false);
   };

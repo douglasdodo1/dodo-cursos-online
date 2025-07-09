@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 type Session = {
+  id: number;
   nome: string;
   email: string;
   token: string;
