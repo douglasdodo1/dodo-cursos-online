@@ -26,12 +26,12 @@ export function NavbarComponent() {
 
   const user = session;
   return (
-    <header className="flex justify-center border-b border-gray-800/50 bg-gray-700/30 backdrop-blur-xl max-w-screen">
-      <div className="max-w-screen pl-12 pr-12 container px-6 py-4">
+    <header className="flex justify-center border-b border-gray-800/50 bg-gray-900/30 backdrop-blur-xl max-w-screen">
+      <div className="max-w-screen pl-12 pr-12 container px-6 ">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="bg-gradient-to-r from-gray-800 to-black p-2 rounded-xl border border-gray-700/50">
-              <Image src="/images/logo.png" alt="logo" width={40} height={40} priority />
+              <Image src="/images/logo.png" alt="logo" width={30} height={30} priority />
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Dodo Cursos</h1>
