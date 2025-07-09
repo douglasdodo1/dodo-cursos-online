@@ -1,11 +1,11 @@
-import { CourseForm } from "@/components/forms/course-form";
 import { NavbarComponent } from "@/components/navbar-component";
+import { NewCourseComponent } from "@/components/new-course-component";
 
 export default function Page() {
   return (
     <div>
       <NavbarComponent />
-      <CourseForm />
+      <NewCourseComponent />
     </div>
   );
 }
