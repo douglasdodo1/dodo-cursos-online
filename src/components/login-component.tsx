@@ -75,6 +75,7 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
                             className="pl-10 h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-600 text-white placeholder:text-gray-500 transition-all duration-200"
                             placeholder="Insira seu email"
                             {...field}
+                            disabled={isLoading}
                           />
                         </div>
                       </FormControl>
@@ -97,6 +98,7 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
                             className="pl-10 h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-600 text-white placeholder:text-gray-500 transition-all duration-200"
                             placeholder="Insira sua senha"
                             {...field}
+                            disabled={isLoading}
                           />
                         </div>
                       </FormControl>

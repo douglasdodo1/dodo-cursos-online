@@ -40,6 +40,7 @@ export const SignupComponent = ({ setIsLogin }: SignupComponentProps) => {
     setSignupSuccess(true);
     await sleep(3000);
     setSignupSuccess(false);
+    setIsLogin(true);
   };
 
   const togglePassword = (index: number) => {
@@ -85,6 +86,7 @@ export const SignupComponent = ({ setIsLogin }: SignupComponentProps) => {
                               className="pl-10 h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-600 text-white placeholder:text-gray-500 transition-all duration-200"
                               placeholder="Insira seu nome"
                               {...field}
+                              disabled={isLoading}
                             />
                           </div>
                         </FormControl>
@@ -105,6 +107,7 @@ export const SignupComponent = ({ setIsLogin }: SignupComponentProps) => {
                               className="pl-10 h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-600 text-white placeholder:text-gray-500 transition-all duration-200"
                               placeholder="seu@email.com"
                               {...field}
+                              disabled={isLoading}
                             />
                           </div>
                         </FormControl>
@@ -126,6 +129,7 @@ export const SignupComponent = ({ setIsLogin }: SignupComponentProps) => {
                               placeholder="Minimo 6 caracteres"
                               type={showPassword[0] ? "text" : "password"}
                               {...field}
+                              disabled={isLoading}
                             />
                             <Button
                               className="absolute right-0 top-1/2 -translate-y-1/2 h-12 w-12"
@@ -159,6 +163,7 @@ export const SignupComponent = ({ setIsLogin }: SignupComponentProps) => {
                               placeholder="Digite a senha novamente"
                               type={showPassword[1] ? "text" : "password"}
                               {...field}
+                              disabled={isLoading}
                             />
                             <Button
                               className="absolute right-0 top-1/2 -translate-y-1/2 p-0"
