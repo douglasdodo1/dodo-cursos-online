@@ -44,6 +44,11 @@ export function DashboardComponent() {
       filtered = courses;
     }
 
+    if (searchTerm.trim() !== "") {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter((course) => course.name.toLowerCase().includes(term));
+    }
+
     const total: number =
       Math.ceil(filtered.length / coursesPerPage) == 0 ? 1 : Math.ceil(filtered.length / coursesPerPage);
 
@@ -52,7 +57,7 @@ export function DashboardComponent() {
 
     setCurrentPage((prev) => (prev > total ? 1 : prev));
     setPaginatedCourses(filtered.slice((currentPage - 1) * coursesPerPage, currentPage * coursesPerPage));
-  }, [courses, currentPage, filterStatus, user?.id]);
+  }, [courses, currentPage, filterStatus, searchTerm, user?.id]);
 
   const handleCreateCourse = () => {
     router.push("/courses/new");
