@@ -65,6 +65,7 @@ export function DashboardComponent() {
 
   const handleCourseClick = (course: CourseDto) => {
     console.log("curso clicado", course);
+    router.push(`/courses/${course.id}`);
   };
 
   return (
