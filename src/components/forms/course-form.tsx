@@ -12,8 +12,8 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { CourseFormData, courseSchema } from "../schemas/course-schema";
 import { CourseDto } from "@/dtos/course-dto";
-import { Popover, PopoverTrigger, PopoverContent } from "@radix-ui/react-popover";
 import { Calendar } from "../ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 export const CourseForm = () => {
   const [isLoading, setIsLoading] = useState(false);

@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
 } from "@radix-ui/react-dropdown-menu";
 import { Edit, MoreVertical, Users, Calendar, Clock, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CourseDto } from "@/dtos/course-dto";
 import { useSessionContext } from "@/app/contexts/session-context";
 
@@ -17,11 +17,13 @@ import { formatDate } from "@/app/helpers/format-date";
 import { use } from "react";
 import Image from "next/image";
 import { getDuration } from "@/app/helpers/get-duration";
-import { lessonDton } from "@/dtos/lesson-dton";
+import { lessonDto } from "@/dtos/lesson-dto";
 import { InstrutorCard } from "./instructor-card";
 import { LessonTypeComponent } from "./lesson-type-component";
+import { AddInstructorModal } from "../add-instructor-modal";
+import { InstructorsDto } from "@/dtos/instructors-dto";
 
-const instructors = [
+const instructorsMock = [
   {
     id: 1,
     name: "João Silva",
@@ -63,7 +65,7 @@ const instructors = [
   },
 ];
 
-const lessons: lessonDton[] = [
+const lessons: lessonDto[] = [
   {
     id: 1,
     title: "Introdução aos Hooks Avançados",
@@ -104,8 +106,11 @@ const LESSONS_PER_PAGE = 6;
 export default function CourseDetailsComponent({ params }: { params: Promise<{ id: string }> }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [filteredLessons, setFilteredLessons] = useState<lessonDto[]>(lessons);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("overview");
+  const [openCreateInstructorModal, setOpenCreateInstructorModal] = useState<boolean>(false);
+  const [instructors, setInstructors] = useState<InstructorsDto[]>([]);
   const { session } = useSessionContext();
   const user = session;
   const { id } = use(params);
@@ -120,12 +125,19 @@ export default function CourseDetailsComponent({ params }: { params: Promise<{ i
     end_date: new Date(),
   };
 
-  const filteredLessons = lessons.filter((lesson) => {
-    const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || lesson.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    setFilteredLessons(
+      lessons.filter((lesson) => {
+        const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === "all" || lesson.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      })
+    );
+  }, [searchTerm, statusFilter]);
 
+  useEffect(() => {
+    setInstructors(instructorsMock);
+  }, []);
   const totalPages = Math.ceil(filteredLessons.length / LESSONS_PER_PAGE);
   const startIndex = (currentPage - 1) * LESSONS_PER_PAGE;
   const paginatedLessons = filteredLessons.slice(startIndex, startIndex + LESSONS_PER_PAGE);
@@ -136,6 +148,10 @@ export default function CourseDetailsComponent({ params }: { params: Promise<{ i
 
   const handleEditCourse = () => {
     console.log("Editar curso");
+  };
+
+  const handleCreateInstructor = () => {
+    setOpenCreateInstructorModal(true);
   };
 
   return (
@@ -274,11 +290,20 @@ export default function CourseDetailsComponent({ params }: { params: Promise<{ i
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-semibold text-white">Instrutores do Curso</h3>
               {canManageInstructors && (
-                <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold">
+                <Button
+                  onClick={handleCreateInstructor}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar Instrutor
                 </Button>
               )}
+              <AddInstructorModal
+                courseId={Number(id)}
+                open={openCreateInstructorModal}
+                setOpen={setOpenCreateInstructorModal}
+                setInstructors={setInstructors}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
