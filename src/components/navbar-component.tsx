@@ -26,9 +26,9 @@ export function NavbarComponent() {
 
   const user = session;
   return (
-    <header className="flex justify-center border-b border-gray-800/50 bg-gray-900/30 backdrop-blur-xl max-w-screen">
+    <header className="flex justify-center border-b border-gray-800/50 bg-gray-900/30 backdrop-blur-xl max-w-screen h-20">
       <div className="max-w-screen pl-12 pr-12 container px-6 ">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between w-full h-full">
           <div className="flex items-center space-x-4">
             <div className="bg-gradient-to-r from-gray-800 to-black p-2 rounded-xl border border-gray-700/50">
               <Image src="/images/logo.png" alt="logo" width={30} height={30} priority />
