@@ -3,7 +3,8 @@ import { Button } from "../ui/button";
 import { TabsContent } from "../ui/tabs";
 import { Input } from "../ui/input";
 import { LessonCard } from "./lesson-card";
-import { lessonDton } from "@/dtos/lesson-dton";
+import { lessonDto } from "@/dtos/lesson-dto";
+import { useRouter } from "next/navigation";
 
 type Props = {
   searchTerm: string;
@@ -11,7 +12,7 @@ type Props = {
   statusFilter: string;
   setStatusFilter: (value: string) => void;
   canEdit: boolean;
-  paginatedLessons: lessonDton[];
+  paginatedLessons: lessonDto[];
   totalPages: number;
   currentPage: number;
   setCurrentPage: (value: number) => void;
@@ -28,6 +29,11 @@ export const LessonTypeComponent = ({
   currentPage,
   setCurrentPage,
 }: Props) => {
+  const router = useRouter();
+  const handleCreateLesson = () => {
+    router.push("/lessons/new");
+  };
+
   return (
     <TabsContent value="lessons" className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 lm: justify-between items-center">
@@ -87,7 +93,10 @@ export const LessonTypeComponent = ({
           </Button>
         </div>
         {canEdit && (
-          <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold">
+          <Button
+            onClick={handleCreateLesson}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Nova Aula
           </Button>

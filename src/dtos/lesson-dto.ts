@@ -1,9 +1,9 @@
-export type lessonDton = {
+export type lessonDto = {
   id: number;
   title: string;
   status: "published" | "draft" | "archived";
   description?: string;
-  order?: number;
+  order: number;
   video_url: string;
   duration: number;
   course_id: number;

@@ -10,12 +10,12 @@ import { Play, MoreVertical, Edit, Trash2, Archive, Eye, EyeOff } from "lucide-r
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { lessonDton } from "@/dtos/lesson-dton";
+import { lessonDto } from "@/dtos/lesson-dto";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 
 type LessonCardProps = {
-  lesson: lessonDton;
+  lesson: lessonDto;
   canEdit: boolean;
 };
 export const LessonCard = ({ lesson, canEdit }: LessonCardProps) => {
