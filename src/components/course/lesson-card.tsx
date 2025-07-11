@@ -13,12 +13,17 @@ import { Button } from "../ui/button";
 import { lessonDto } from "@/dtos/lesson-dto";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
+import { useState } from "react";
+import { EditLessonModal } from "../modals/edit-lesson-modal";
 
 type LessonCardProps = {
   lesson: lessonDto;
   canEdit: boolean;
+  setLessons: React.Dispatch<React.SetStateAction<lessonDto[]>>;
 };
-export const LessonCard = ({ lesson, canEdit }: LessonCardProps) => {
+export const LessonCard = ({ lesson, canEdit, setLessons }: LessonCardProps) => {
+  const [openEditCourseModal, setOpenEditCourseModal] = useState<boolean>(false);
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "published":
@@ -31,6 +36,15 @@ export const LessonCard = ({ lesson, canEdit }: LessonCardProps) => {
         return <EyeOff className="h-4 w-4" />;
     }
   };
+
+  const handleEditCourse = () => {
+    setOpenEditCourseModal(true);
+  };
+
+  const handleDelete = async () => {
+    setLessons((prevLessons) => prevLessons.filter((l) => l.id !== lesson.id));
+  };
+
   return (
     <Card
       key={lesson.id}
@@ -66,23 +80,33 @@ export const LessonCard = ({ lesson, canEdit }: LessonCardProps) => {
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-900/95 backdrop-blur-xl border-gray-700/50" align="end">
+              <DropdownMenuContent className="bg-gray-900 backdrop-blur-xl border-gray-700/50 z-1000" align="end">
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
                   className="text-gray-300 hover:bg-gray-800/50"
                 >
-                  <Edit className="mr-2 h-4 w-4" />
-                  Editar Aula
+                  <Button className="w-full" size="sm" variant="ghost" onClick={handleEditCourse}>
+                    <Edit className="w-6 h-4 " />
+                    Editar Aula
+                  </Button>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-red-400 hover:bg-red-950/50">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Excluir Aula
+                  <Button className="w-full" size="sm" variant="destructive" onClick={handleDelete}>
+                    <Trash2 className="h-4 w-4" />
+                    Excluir Aula
+                  </Button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          <EditLessonModal
+            open={openEditCourseModal}
+            setIsOpen={setOpenEditCourseModal}
+            initialData={lesson}
+            setLessons={setLessons}
+          />
         </div>
       </CardContent>
     </Card>

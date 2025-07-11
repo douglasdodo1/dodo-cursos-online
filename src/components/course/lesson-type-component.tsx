@@ -4,7 +4,9 @@ import { TabsContent } from "../ui/tabs";
 import { Input } from "../ui/input";
 import { LessonCard } from "./lesson-card";
 import { lessonDto } from "@/dtos/lesson-dto";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import LessonComponent from "../modals/add-lesson-modal";
+import { CourseDto } from "@/dtos/course-dto";
 
 type Props = {
   searchTerm: string;
@@ -13,9 +15,11 @@ type Props = {
   setStatusFilter: (value: string) => void;
   canEdit: boolean;
   paginatedLessons: lessonDto[];
+  setPaginatedLessons: React.Dispatch<React.SetStateAction<lessonDto[]>>;
   totalPages: number;
   currentPage: number;
   setCurrentPage: (value: number) => void;
+  course: CourseDto;
 };
 
 export const LessonTypeComponent = ({
@@ -25,13 +29,16 @@ export const LessonTypeComponent = ({
   setStatusFilter,
   canEdit,
   paginatedLessons,
+  setPaginatedLessons,
   totalPages,
   currentPage,
   setCurrentPage,
+  course,
 }: Props) => {
-  const router = useRouter();
+  const [isOpenLessonCreateModal, setIsOpenLessonCreateModal] = useState<boolean>(false);
+
   const handleCreateLesson = () => {
-    router.push("/lessons/new");
+    setIsOpenLessonCreateModal(true);
   };
 
   return (
@@ -101,13 +108,24 @@ export const LessonTypeComponent = ({
             Nova Aula
           </Button>
         )}
+        {course.id ? (
+          <LessonComponent
+            isOpen={isOpenLessonCreateModal}
+            setIsOpen={setIsOpenLessonCreateModal}
+            courseId={course.id}
+            creatorId={0}
+            setLessons={setPaginatedLessons}
+          />
+        ) : (
+          <div></div>
+        )}
       </div>
 
       {paginatedLessons.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedLessons.map((lesson) => (
-              <LessonCard key={lesson.id} lesson={lesson} canEdit={canEdit} />
+              <LessonCard key={lesson.id} lesson={lesson} setLessons={setPaginatedLessons} canEdit={canEdit} />
             ))}
           </div>
 

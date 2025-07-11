@@ -1,5 +1,4 @@
 "use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { FileText, Type, Loader2, Save, Video, Hash, Clock } from "lucide-react";
@@ -11,8 +10,16 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { lessonDto } from "@/dtos/lesson-dto";
 import { LessonFormData, lessonSchema } from "../schemas/lesson-schema";
+import React from "react";
 
-export const LessonForm = ({ courseId, creatorId }: { courseId: number; creatorId: number }) => {
+type FormProps = {
+  courseId: number;
+  creatorId: number;
+  setLessons: React.Dispatch<React.SetStateAction<lessonDto[]>>;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   const router = useRouter();
@@ -38,6 +45,16 @@ export const LessonForm = ({ courseId, creatorId }: { courseId: number; creatorI
     setIsLoading(true);
     console.log("Enviando:", data);
     await sleep(2000);
+    setLessons((prev) => [
+      ...prev,
+      {
+        ...data,
+        id: Math.floor(Math.random() * 100000),
+        course_id: courseId,
+        creator_id: creatorId,
+      },
+    ]);
+    setIsOpen(false);
     setIsLoading(false);
   };
 
