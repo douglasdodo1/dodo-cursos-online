@@ -3,17 +3,27 @@ import { Card, CardContent } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { CourseDto } from "@/dtos/course-dto";
+import { Trash } from "lucide-react";
 
-type instructorProps = {
+type InstructorProps = {
   instructor: InstructorsDto;
-  course: CourseDto;
+  course: CourseDto | undefined;
+  instructors: InstructorsDto[];
+  setInstructors: React.Dispatch<React.SetStateAction<InstructorsDto[]>>;
 };
 
-export const InstrutorCard = ({ instructor, course }: instructorProps) => {
+export const InstrutorCard = ({ instructor, course, instructors, setInstructors }: InstructorProps) => {
+  const isCreator = instructor.id === course?.creator?.id;
+
+  const handleDeleteInstructor = () => {
+    const updated = instructors.filter((inst) => inst.id !== instructor.id);
+    setInstructors(updated);
+  };
+
   return (
     <Card
       key={instructor.id}
-      className="bg-gray-900/60 border-gray-700/50 hover:bg-gray-900/80 transition-all duration-200 backdrop-blur-sm"
+      className="bg-gray-900/60 border-gray-700/50 hover:bg-gray-900/80 transition-all duration-200 backdrop-blur-sm relative"
     >
       <CardContent className="p-6">
         <div className="flex items-start space-x-4">
@@ -26,26 +36,36 @@ export const InstrutorCard = ({ instructor, course }: instructorProps) => {
                 .join("")}
             </AvatarFallback>
           </Avatar>
+
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
                 <h4 className="font-semibold text-white">{instructor.name}</h4>
-                <p className="text-sm text-green-400">{instructor.name}</p>
+                <p className="text-sm text-green-400">{instructor.title}</p>
                 <p className="text-xs text-gray-500 mt-1">{instructor.email}</p>
               </div>
               <Badge
                 className={
-                  course.creator?.id === instructor.id
+                  course?.creator?.id === instructor.id
                     ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
                     : "bg-blue-500/20 text-blue-400 border-blue-500/30"
                 }
               >
-                {course.creator?.id === instructor.id ? "Criador" : "Colaborador"}
+                {course?.creator?.id === instructor.id ? "Criador" : "Colaborador"}
               </Badge>
             </div>
             <p className="text-sm text-gray-400 mt-2">{instructor.bio}</p>
           </div>
         </div>
+        {isCreator == false && (
+          <button
+            onClick={handleDeleteInstructor}
+            className="absolute top-2 right-2 text-red-400 hover:text-red-600 transition-colors"
+            title="Remover Instrutor"
+          >
+            <Trash className="w-4 h-4" />
+          </button>
+        )}
       </CardContent>
     </Card>
   );
