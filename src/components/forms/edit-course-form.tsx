@@ -1,74 +1,69 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { format } from "date-fns";
 import { FileText, Type, Loader2, Save, CalendarIcon } from "lucide-react";
+
 import { Button } from "../ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
-import { format } from "date-fns";
-import { CourseFormData, courseSchema } from "../schemas/course-schema";
-import { CourseDto } from "@/dtos/course-dto";
 import { Calendar } from "../ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
-export const CourseForm = () => {
+import { courseSchema } from "../schemas/course-schema";
+import { z } from "zod";
+import { CourseDto } from "@/dtos/course-dto";
+
+const partialCourseSchema = courseSchema.partial();
+export type PartialCourseFormData = z.infer<typeof partialCourseSchema>;
+
+interface EditCourseFormProps {
+  initialData: PartialCourseFormData;
+  setOpen: (value: boolean) => void;
+  setCurrentCourse: React.Dispatch<React.SetStateAction<CourseDto>>;
+}
+
+export const EditCourseForm = ({ initialData, setOpen, setCurrentCourse }: EditCourseFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const router = useRouter();
-
-  const mockCourse: CourseDto = {
-    name: "React Avançado",
-    description: "Curso de React Avançado",
-    start_date: new Date(),
-    end_date: new Date(),
-  };
-
-  const form = useForm<CourseFormData>({
-    resolver: zodResolver(courseSchema),
-    defaultValues: mockCourse,
+  const form = useForm<PartialCourseFormData>({
+    resolver: zodResolver(partialCourseSchema),
+    defaultValues: initialData,
   });
 
-  const handleSubmit = async (data: CourseFormData) => {
+  const handleSubmit = async (data: PartialCourseFormData) => {
     setIsLoading(true);
-    console.log(data);
-    await sleep(2000);
+    await new Promise((r) => setTimeout(r, 1000));
+    setCurrentCourse((prev) => ({ ...prev, ...data }));
     setIsLoading(false);
-  };
-
-  const handleCancel = () => {
-    router.back();
+    setOpen(false);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 ">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-2 text-amber-50">
-                <Type className="h-4 w-4 text-green-400" />
-                Nome do Curso
+                <Type className="h-4 w-4 text-green-400" /> Nome do Curso
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="Ex: React Avançado - Hooks e Performance"
+                  placeholder="Nome do curso"
                   disabled={isLoading}
-                  className={`h-12 bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 transition-all duration-200 ${
-                    fieldState.error
-                      ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
-                      : "border-gray-700/50 focus:border-green-500/50 focus:ring-green-500/20 hover:border-gray-600/50"
+                  className={`bg-black/40 text-white border-gray-700 ${
+                    fieldState.error ? "border-red-500 focus:border-red-400" : "focus:border-green-500"
                   }`}
                 />
               </FormControl>
               <FormMessage />
-              <p className="text-xs text-gray-500">Mínimo de 3 caracteres</p>
             </FormItem>
           )}
         />
@@ -79,52 +74,42 @@ export const CourseForm = () => {
           render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-2 text-amber-50">
-                <FileText className="h-4 w-4 text-green-400" />
-                Descrição
+                <FileText className="h-4 w-4 text-green-400" /> Descrição
               </FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
-                  placeholder="Descreva o conteúdo e objetivos do curso..."
+                  placeholder="Descrição do curso"
                   disabled={isLoading}
-                  className={`min-h-[120px] bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 transition-all duration-200 resize-none ${
-                    fieldState.error
-                      ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
-                      : "border-gray-700/50 focus:border-green-500/50 focus:ring-green-500/20 hover:border-gray-600/50"
+                  className={`bg-black/40 text-white border-gray-700 resize-none min-h-[100px] ${
+                    fieldState.error ? "border-red-500 focus:border-red-400" : "focus:border-green-500"
                   }`}
                 />
               </FormControl>
               <FormMessage />
-              <p className="text-xs text-gray-500">
-                {field.value?.length || 0}/500 caracteres
-                {(field.value?.length ?? 0) > 450 && (
-                  <span className="text-yellow-400 ml-2">({500 - (field.value?.length ?? 0)} restantes)</span>
-                )}
-              </p>
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="start_date"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2 text-amber-50">
-                  <CalendarIcon className="h-4 w-4 text-green-400" />
-                  Data de Início
+                  <CalendarIcon className="h-4 w-4 text-green-400" /> Início
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={null}
-                        className="h-12 w-full bg-black/40 backdrop-blur-sm border-2 border-gray-700 text-white placeholder:text-gray-500 px-3 flex items-center"
+                        className="h-12 w-full bg-black/40 border-gray-700 text-white px-3 flex items-center justify-between"
                         disabled={isLoading}
                       >
-                        {field.value ? format(field.value, "dd/MM/yyyy") : "Escolha data"}
-                        <CalendarIcon className="ml-auto h-5 w-5 text-gray-400" />
+                        {field.value ? format(field.value, "dd/MM/yyyy") : "Escolha a data"}
+                        <CalendarIcon className="h-5 w-5 text-gray-400" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -149,19 +134,18 @@ export const CourseForm = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2 text-amber-50">
-                  <CalendarIcon className="h-4 w-4 text-red-400" />
-                  Data de Término
+                  <CalendarIcon className="h-4 w-4 text-red-400" /> Término
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={null}
+                        className="h-12 w-full bg-black/40 border-gray-700 text-white px-3 flex items-center justify-between"
                         disabled={isLoading}
-                        className="h-12 w-full bg-black/40 backdrop-blur-sm border-2 border-gray-700 text-white placeholder:text-gray-500 px-3 flex items-center"
                       >
-                        {field.value ? format(field.value, "dd/MM/yyyy") : "Escolha data"}
-                        <CalendarIcon className="ml-auto h-5 w-5 text-gray-400" />
+                        {field.value ? format(field.value, "dd/MM/yyyy") : "Escolha a data"}
+                        <CalendarIcon className="h-5 w-5 text-gray-400" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -181,30 +165,28 @@ export const CourseForm = () => {
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 pt-6">
+        <div className="flex justify-end gap-4 pt-4">
           <Button
             type="button"
             variant="outline"
-            onClick={handleCancel}
+            onClick={() => setOpen(false)}
             disabled={isLoading}
-            className="flex-1 h-12 border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+            className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={isLoading}
-            className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold shadow-lg shadow-green-500/25 transition-all duration-200"
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold shadow-lg shadow-green-500/25"
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Criando...
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Salvando...
               </>
             ) : (
               <>
-                <Save className="mr-2 h-5 w-5" />
-                Criar Curso
+                <Save className="mr-2 h-5 w-5" /> Salvar
               </>
             )}
           </Button>
