@@ -1,5 +1,4 @@
 "use client";
-
 import { CourseForm } from "./forms/course-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { FileText } from "lucide-react";
