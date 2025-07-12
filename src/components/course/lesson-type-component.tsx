@@ -11,8 +11,8 @@ import { CourseDto } from "@/dtos/course-dto";
 type Props = {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
-  statusFilter: string;
-  setStatusFilter: (value: string) => void;
+  statusFilter: "all" | "published" | "draft" | "archived";
+  setStatusFilter: React.Dispatch<React.SetStateAction<"all" | "published" | "draft" | "archived">>;
   canEdit: boolean;
   paginatedLessons: lessonDto[];
   setPaginatedLessons: React.Dispatch<React.SetStateAction<lessonDto[]>>;
@@ -99,15 +99,14 @@ export const LessonTypeComponent = ({
             arquivadas
           </Button>
         </div>
-        {canEdit && (
-          <Button
-            onClick={handleCreateLesson}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Aula
-          </Button>
-        )}
+
+        <Button
+          onClick={handleCreateLesson}
+          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Nova Aula
+        </Button>
         {course.id ? (
           <LessonComponent
             isOpen={isOpenLessonCreateModal}
@@ -125,7 +124,7 @@ export const LessonTypeComponent = ({
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedLessons.map((lesson) => (
-              <LessonCard key={lesson.id} lesson={lesson} setLessons={setPaginatedLessons} canEdit={canEdit} />
+              <LessonCard key={lesson.id} lesson={lesson} setLessons={setPaginatedLessons} />
             ))}
           </div>
 

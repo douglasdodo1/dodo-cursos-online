@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { CourseDto } from "@/dtos/course-dto";
 import { Trash } from "lucide-react";
+import { useSessionContext } from "@/app/contexts/session-context";
 
 type InstructorProps = {
   instructor: InstructorsDto;
@@ -13,7 +14,10 @@ type InstructorProps = {
 };
 
 export const InstrutorCard = ({ instructor, course, instructors, setInstructors }: InstructorProps) => {
-  const isCreator = instructor.id === course?.creator?.id;
+  const { session } = useSessionContext();
+  const user = session;
+
+  const isCreator = user?.id === course?.creator?.id;
 
   const handleDeleteInstructor = () => {
     const updated = instructors.filter((inst) => inst.id !== instructor.id);
@@ -57,7 +61,7 @@ export const InstrutorCard = ({ instructor, course, instructors, setInstructors 
             <p className="text-sm text-gray-400 mt-2">{instructor.bio}</p>
           </div>
         </div>
-        {isCreator == false && (
+        {isCreator && (
           <button
             onClick={handleDeleteInstructor}
             className="absolute top-2 right-2 text-red-400 hover:text-red-600 transition-colors"

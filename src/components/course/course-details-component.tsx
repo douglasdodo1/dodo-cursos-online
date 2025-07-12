@@ -23,48 +23,7 @@ import { AddInstructorModal } from "../modals/add-instructor-modal";
 import { InstructorsDto } from "@/dtos/instructors-dto";
 import { EditCourseModal } from "../modals/edit-course-modal";
 import { usePathname, useRouter } from "next/navigation";
-
-const instructorsMock = [
-  {
-    id: 1,
-    name: "João Silva",
-    email: "joao@exemplo.com",
-    avatar: "/placeholder.svg?height=40&width=40",
-    role: "creator",
-    title: "Senior React Developer",
-    bio: "10+ anos de experiência em desenvolvimento frontend",
-    expertises: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
-    linkedin: "https://linkedin.com/joao-silva",
-    github: "https://github.com/joao-silva",
-    website: "https://joao-silva.com",
-  },
-  {
-    id: 2,
-    name: "Maria Santos",
-    email: "maria@exemplo.com",
-    avatar: "/placeholder.svg?height=40&width=40",
-    role: "collaborator",
-    title: "Frontend Architect",
-    bio: "Especialista em performance e arquitetura React",
-    expertises: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
-    linkedin: "https://linkedin.com/joao-silva",
-    github: "https://github.com/joao-silva",
-    website: "https://joao-silva.com",
-  },
-  {
-    id: 3,
-    name: "Pedro Costa",
-    email: "pedro@exemplo.com",
-    avatar: "/placeholder.svg?height=40&width=40",
-    role: "collaborator",
-    title: "UI/UX Developer",
-    bio: "Focado em experiência do usuário e design systems",
-    expertises: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
-    linkedin: "https://linkedin.com/joao-silva",
-    github: "https://github.com/joao-silva",
-    website: "https://joao-silva.com",
-  },
-];
+import { useCourseContext } from "@/app/contexts/course-context";
 
 const lessons: lessonDto[] = [
   {
@@ -83,11 +42,11 @@ const lessons: lessonDto[] = [
     title: "Introdução aos Hooks Avançados",
     description: "Visão geral dos hooks customizados e quando utilizá-los",
     duration: 15,
-    status: "published",
+    status: "draft",
     video_url: "/placeholder.svg?height=120&width=200",
     order: 1,
-    course_id: 1,
-    creator_id: 1,
+    course_id: 2,
+    creator_id: 3,
   },
   {
     id: 3,
@@ -97,39 +56,41 @@ const lessons: lessonDto[] = [
     status: "archived",
     video_url: "/placeholder.svg?height=120&width=200",
     order: 1,
-    course_id: 1,
-    creator_id: 1,
+    course_id: 3,
+    creator_id: 2,
   },
 ];
-
-const course: CourseDto = {
-  id: 1,
-  name: "Curso teste",
-  description: "Descrição teste para esse curso teste",
-  creator: { id: 1, name: "teste", email: "teste@mail.com" },
-  student_number: 15,
-  start_date: new Date(),
-  end_date: new Date(),
-};
 
 const LESSONS_PER_PAGE = 6;
 
 export default function CourseDetailsComponent() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "archived">("all");
   const [filteredLessons, setFilteredLessons] = useState<lessonDto[]>(lessons);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("overview");
-  const [openCreateInstructorModal, setOpenCreateInstructorModal] = useState<boolean>(false);
+  const [openCreateInstructorModal, setOpenCreateInstructorModal] = useState(false);
   const [instructors, setInstructors] = useState<InstructorsDto[]>([]);
-  const [openEditCourseModal, setOpenEditCourseModal] = useState<boolean>(false);
-  const [currentCourse, setCurrentCourse] = useState<CourseDto>(course);
+  const [openEditCourseModal, setOpenEditCourseModal] = useState(false);
+  const { courses } = useCourseContext();
+  const pathname = usePathname();
+  const id = pathname ? Number(pathname.split("/")[2]) : NaN;
+
+  const [currentCourse, setCurrentCourse] = useState<CourseDto>({
+    id: 0,
+    name: "",
+    description: "",
+    start_date: new Date(),
+    end_date: new Date(),
+    creator: { id: 0, name: "", email: "" },
+    instructors: [],
+  });
+
   const [paginatedLessons, setPaginatedLessons] = useState<lessonDto[]>(lessons);
   const router = useRouter();
 
   const { session } = useSessionContext();
   const user = session;
-  const id = usePathname()?.split("/")[2];
   const totalPages = Math.ceil(filteredLessons.length / LESSONS_PER_PAGE);
 
   useEffect(() => {
@@ -143,16 +104,21 @@ export default function CourseDetailsComponent() {
   }, [searchTerm, statusFilter, currentPage]);
 
   useEffect(() => {
-    setInstructors(instructorsMock);
-    setCurrentCourse(course);
-  }, []);
+    if (!isNaN(id)) {
+      const course = courses.find((c) => c.id === id);
+      if (course) {
+        setCurrentCourse(course);
+      }
+    }
+  }, [courses, id]);
 
-  const isCreator = user?.id === currentCourse?.creator?.id;
+  const isCreator = user?.id === currentCourse.creator?.id;
   const canEdit = isCreator;
   const canManageInstructors = isCreator;
 
   const handleEditCourse = () => {
     setOpenEditCourseModal(true);
+    console.log(currentCourse.instructors);
   };
 
   const handleCreateInstructor = () => {
@@ -164,8 +130,8 @@ export default function CourseDetailsComponent() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-black via-gray-900 to-black  justify-center items-top pt-12">
-      <main className="container mx-auto px-4 py-8 justify-center items-center">
+    <div className="flex min-h-screen bg-gradient-to-br from-black via-gray-900 to-black justify-center items-start pt-12">
+      <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:w-1/3">
@@ -187,7 +153,7 @@ export default function CourseDetailsComponent() {
                   </Button>
 
                   <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">{currentCourse?.name}</h1>
+                    <h1 className="text-3xl font-bold text-white mb-2">{currentCourse.name}</h1>
                   </div>
                   {canEdit && (
                     <DropdownMenu>
@@ -197,7 +163,7 @@ export default function CourseDetailsComponent() {
                         </Button>
                       </DropdownMenuTrigger>
 
-                      <DropdownMenuContent className="... z-[9999] bg-gray-800 " align="end">
+                      <DropdownMenuContent className="z-[9999] bg-gray-800" align="end">
                         <DropdownMenuItem onClick={handleEditCourse} className="text-gray-300 hover:bg-gray-800">
                           <Button
                             variant="ghost"
@@ -232,7 +198,7 @@ export default function CourseDetailsComponent() {
                       <Calendar className="h-4 w-4 text-green-400" />
                       <div>
                         <p className="text-xs text-gray-500">Início</p>
-                        <p className="text-sm font-medium text-white">{formatDate(currentCourse?.start_date)}</p>
+                        <p className="text-sm font-medium text-white">{formatDate(currentCourse.start_date)}</p>
                       </div>
                     </div>
                   </div>
@@ -241,7 +207,7 @@ export default function CourseDetailsComponent() {
                       <Calendar className="h-4 w-4 text-red-400" />
                       <div>
                         <p className="text-xs text-gray-500">Término</p>
-                        <p className="text-sm font-medium text-white">{formatDate(currentCourse?.end_date)}</p>
+                        <p className="text-sm font-medium text-white">{formatDate(currentCourse.end_date)}</p>
                       </div>
                     </div>
                   </div>
@@ -250,7 +216,7 @@ export default function CourseDetailsComponent() {
                       <Users className="h-4 w-4 text-blue-400" />
                       <div>
                         <p className="text-xs text-gray-500">Estudantes</p>
-                        <p className="text-sm font-medium text-white">{0}</p>
+                        <p className="text-sm font-medium text-white">{5}</p>
                       </div>
                     </div>
                   </div>
@@ -260,7 +226,7 @@ export default function CourseDetailsComponent() {
                       <div>
                         <p className="text-xs text-gray-500">Duração</p>
                         <p className="text-sm font-medium text-white">
-                          {getDuration(currentCourse?.start_date, currentCourse?.end_date)}
+                          {getDuration(currentCourse.start_date, currentCourse.end_date)}
                         </p>
                       </div>
                     </div>
@@ -271,12 +237,12 @@ export default function CourseDetailsComponent() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 ">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex justify-center sm:justify-start">
-            <TabsList className="bg-gray-900/60 border border-gray-700/50 ">
+            <TabsList className="bg-gray-900/60 border border-gray-700/50">
               <TabsTrigger
                 value="overview"
-                className=" text-amber-50 data-[state=active]:bg-green-600 data-[state=active]:text-black"
+                className="text-amber-50 data-[state=active]:bg-green-600 data-[state=active]:text-black"
               >
                 Visão Geral
               </TabsTrigger>
@@ -301,7 +267,7 @@ export default function CourseDetailsComponent() {
                 <CardTitle className="text-white">Descrição do curso</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-300 leading-relaxed">{currentCourse?.description}</p>
+                <p className="text-gray-300 leading-relaxed">{currentCourse.description}</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -333,7 +299,7 @@ export default function CourseDetailsComponent() {
                 </Button>
               )}
               <AddInstructorModal
-                courseId={Number(id)}
+                courseId={id}
                 open={openCreateInstructorModal}
                 setOpen={setOpenCreateInstructorModal}
                 setInstructors={setInstructors}

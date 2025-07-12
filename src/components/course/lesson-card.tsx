@@ -13,16 +13,25 @@ import { Button } from "../ui/button";
 import { lessonDto } from "@/dtos/lesson-dto";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EditLessonModal } from "../modals/edit-lesson-modal";
+import { useSessionContext } from "@/app/contexts/session-context";
 
 type LessonCardProps = {
   lesson: lessonDto;
-  canEdit: boolean;
   setLessons: React.Dispatch<React.SetStateAction<lessonDto[]>>;
 };
-export const LessonCard = ({ lesson, canEdit, setLessons }: LessonCardProps) => {
+export const LessonCard = ({ lesson, setLessons }: LessonCardProps) => {
   const [openEditCourseModal, setOpenEditCourseModal] = useState<boolean>(false);
+  const [isCreator, setIsCreator] = useState<boolean>(false);
+  const { session } = useSessionContext();
+  const user = session;
+
+  useEffect(() => {
+    if (lesson.creator_id === user?.id) {
+      setIsCreator(true);
+    }
+  }, [lesson.creator_id, user?.id]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -73,7 +82,7 @@ export const LessonCard = ({ lesson, canEdit, setLessons }: LessonCardProps) => 
             <Play className="mr-1 h-4 w-4" />
             Assistir
           </Button>
-          {canEdit && (
+          {isCreator && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
