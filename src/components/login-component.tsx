@@ -11,6 +11,8 @@ import { AuthFormData, authSchema } from "./schemas/auth-schema";
 import Image from "next/image";
 import { useSessionContext } from "@/app/contexts/session-context";
 import { useRouter } from "next/navigation";
+import { MockCourses } from "@/app/helpers/mock-courses";
+import { useCourseContext } from "@/app/contexts/course-context";
 
 interface LoginComponentProps {
   setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,6 +27,7 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { setSession } = useSessionContext();
   const router = useRouter();
+  const { setCourses } = useCourseContext();
 
   const form = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
@@ -37,6 +40,7 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
     console.log(data);
     await sleep(2000);
     setSession({ id: 1, nome: "dodo", email: "dodo@example.com", token: "123" });
+    setCourses(MockCourses());
     await router.push("/dashboard");
     setIsLoading(false);
   };

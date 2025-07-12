@@ -1,23 +1,14 @@
 "use client";
 import { BookOpen, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { useEffect, useState } from "react";
 import { CourseDto } from "@/dtos/course-dto";
-import { Label } from "./ui/label";
+import { Label } from "../ui/label";
 import { useSessionContext } from "@/app/contexts/session-context";
-import { CardDashboard } from "./dashboard/card-dashboard";
+import { CardDashboard } from "./card-dashboard";
 import { useRouter } from "next/navigation";
-
-const mockCourses: CourseDto[] = Array.from({ length: 12 }).map((_, index) => ({
-  id: index + 1,
-  name: `Curso ${index + 1}`,
-  description: "Descrição do curso.",
-  creator: { id: Math.floor(Math.random() * 3) + 1, name: "John Doe", email: "example@example.com" },
-  student_number: 10 + index,
-  start_date: new Date(),
-  end_date: new Date(),
-}));
+import { useCourseContext } from "@/app/contexts/course-context";
 
 export function DashboardComponent() {
   type filterStatusType = "all" | "my" | "arquived";
@@ -27,7 +18,7 @@ export function DashboardComponent() {
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<filterStatusType>("all");
-  const [courses, setCourses] = useState<CourseDto[]>([]);
+  const { courses, setCourses } = useCourseContext();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const coursesPerPage: number = 6;
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -35,8 +26,6 @@ export function DashboardComponent() {
   const [filteredCourses, setFilteredCourses] = useState<CourseDto[]>([]);
 
   useEffect(() => {
-    setCourses(mockCourses);
-
     let filtered = [];
     if (filterStatus === "my") {
       filtered = courses.filter((course) => course.creator?.id === user?.id);
@@ -64,7 +53,6 @@ export function DashboardComponent() {
   };
 
   const handleCourseClick = (course: CourseDto) => {
-    console.log("curso clicado", course);
     router.push(`/courses/${course.id}`);
   };
 
@@ -86,7 +74,7 @@ export function DashboardComponent() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Buscar cursos..."
@@ -95,17 +83,20 @@ export function DashboardComponent() {
             className="pl-10 bg-gray-900/50 border-gray-700/50 text-white placeholder:text-gray-500 focus:border-green-500/50"
           />
         </div>
-        <div className="flex justify-end gap-2  w-1/4">
-          <Label className="text-amber-100 text-2xl mr-2  justify-end">
-            {currentPage} de {totalPages}
-          </Label>
+
+        <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto sm:flex-nowrap">
+          <div className="flex justify-end w-20 sm:w-24 md:w-28 lg:w-32 xl:w-36 2xl:w-40 shrink-0">
+            <Label className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl text-amber-100">
+              {currentPage} de {totalPages}
+            </Label>
+          </div>
 
           <Button
             variant={currentPage > 1 ? "default" : "outline"}
             onClick={() => setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev))}
             className={
               currentPage > 1
-                ? "border border-transparent bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black "
+                ? "border border-transparent bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black"
                 : "border-gray-700 text-gray-300 bg-green-800/50 hover:bg-gray-800 focus:outline-none focus:ring-0"
             }
           >
@@ -115,7 +106,7 @@ export function DashboardComponent() {
             variant={currentPage < totalPages ? "default" : "outline"}
             className={
               currentPage < totalPages
-                ? "border border-transparent bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black "
+                ? "border border-transparent bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black"
                 : "border-gray-700 text-gray-300 bg-green-800/50 hover:bg-gray-800 focus:outline-none focus:ring-0"
             }
             onClick={() => setCurrentPage((prev) => (prev < totalPages ? prev + 1 : prev))}
@@ -151,7 +142,12 @@ export function DashboardComponent() {
         <div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {paginatedCourses.map((course) => (
-              <CardDashboard key={course.id} course={course} handleCourseClick={handleCourseClick} />
+              <CardDashboard
+                key={course.id}
+                course={course}
+                handleCourseClick={handleCourseClick}
+                setCourses={setCourses}
+              />
             ))}
           </div>
 

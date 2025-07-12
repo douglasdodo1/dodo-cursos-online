@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "./contexts/session-context";
+import { CourseProvider } from "./contexts/course-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,9 @@ export default function RootLayout({
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
         </div>
         <SessionProvider>
-          <div className="relative z-10">{children}</div>
+          <CourseProvider>
+            <div className="relative z-10">{children}</div>
+          </CourseProvider>
         </SessionProvider>
       </body>
     </html>

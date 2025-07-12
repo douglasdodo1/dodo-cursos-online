@@ -1,4 +1,4 @@
-import { DashboardComponent } from "@/components/dashboard-component";
+import { DashboardComponent } from "@/components/dashboard/dashboard-component";
 import { NavbarComponent } from "@/components/navbar-component";
 
 export default function Dashboard() {
