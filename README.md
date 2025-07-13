@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎓 Dodo Cursos Online
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-15-blue?logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-blue?logo=tailwind-css)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
-First, run the development server:
+Plataforma moderna e responsiva para criação e gerenciamento de cursos online. Desenvolvido com **Next.js 15**, **React 19**, **Tailwind CSS 4** e uma arquitetura de componentes reutilizáveis.
 
-```bash
+## 🚀 Visão Geral
+
+O **Dodo Cursos Online** permite:
+
+- Gerenciar cursos, lições e instrutores
+- Visualizar dashboards e estatísticas
+- Criar, editar e excluir conteúdos educacionais
+- Usar formulários dinâmicos e interações modernas com modais, notificações e validações
+
+---
+
+## 🧱 Tecnologias Utilizadas
+
+- **Next.js 15** com App Router
+- **React 19** + **Zustand** (estado global)
+- **Tailwind CSS 4** + **tw-animate-css**
+- **Zod** (validação de formulários)
+- **React Hook Form**
+- **Radix UI** e **Lucide Icons**
+- **Date-fns** (tratamento de datas)
+- **Sonner** (toasts e notificações)
+
+---
+
+## 📁 Estrutura de Pastas
+
+```plaintext
+src/
+├── app/                # Rotas e layouts
+│   ├── courses/        # Páginas de cursos (new, [id], dashboard)
+│   ├── contexts/       # Contextos globais (curso, sessão)
+│   ├── helpers/        # Funções utilitárias (formatar datas, status etc.)
+│   └── styles/         # CSS global
+├── components/         # Componentes reutilizáveis
+│   ├── cards/          # Cartões visuais
+│   ├── course/         # Detalhes e tipos de aula
+│   ├── forms/          # Formulários (curso, aula)
+│   ├── modals/         # Modais interativos
+│   ├── ui/             # Componentes visuais reutilizáveis (input, button, dialog)
+│   └── schemas/        # Validações com Zod
+├── dtos/               # Tipagens de dados
+├── lib/                # Funções utilitárias globais
+public/                 # Arquivos estáticos (imagens, SVGs)
+📦 Instalação
+Clone o projeto e instale as dependências:
+
+bash
+Copiar
+Editar
+git clone https://github.com/douglasdodo1/dodo-cursos-online.git
+cd dodo-cursos-online
+npm install
+🧪 Scripts disponíveis
+Comando	Descrição
+npm run dev	Inicia o servidor de desenvolvimento (Turbopack)
+npm run build	Gera a build de produção
+npm run start	Inicia o servidor em produção
+npm run lint	Verifica erros com ESLint
+
+✅ Funcionalidades
+📚 CRUD de cursos, lições e instrutores
+
+🧑‍🏫 Modais para adição/edição com validação
+
+🎯 Navegação baseada em contexto (course-context, session-context)
+
+🎨 UI moderna e responsiva com Tailwind + Radix UI
+
+⚡ Feedback com toasts (sonner)
+
+📆 Componentes interativos como calendários, seletores, tabs
+
+👨‍💻 Como contribuir
+Contribuições são bem-vindas! Para começar:
+
+bash
+Copiar
+Editar
+git clone https://github.com/douglasdodo1/dodo-cursos-online.git
+cd dodo-cursos-online
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Faça suas alterações e envie um Pull Request 😄
+
+📄 Licença
+Este projeto está licenciado sob a MIT License.
+
+📌 Autor
+Desenvolvido por Douglas Gemir 🧠💻
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
