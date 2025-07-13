@@ -21,14 +21,21 @@ export const CourseForm = () => {
   const router = useRouter();
 
   const mockCourse: CourseDto = {
+    id: Math.floor(Math.random() * 1000) + 1,
     name: "React Avançado",
     description: "Curso de React Avançado",
     start_date: new Date(),
     end_date: new Date(),
+    instructors: [],
   };
 
+  const refinedSchema = courseSchema.refine((data) => data.start_date <= data.end_date, {
+    message: "Data de início deve ser anterior ou igual à data de término",
+    path: ["start_date"],
+  });
+
   const form = useForm<CourseFormData>({
-    resolver: zodResolver(courseSchema),
+    resolver: zodResolver(refinedSchema),
     defaultValues: mockCourse,
   });
 
@@ -36,6 +43,13 @@ export const CourseForm = () => {
     setIsLoading(true);
     console.log(data);
     await sleep(2000);
+    const stored = localStorage.getItem("courses");
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const updatedCourses = [...parsed, data];
+      localStorage.setItem("courses", JSON.stringify(updatedCourses));
+    }
     setIsLoading(false);
   };
 
@@ -67,7 +81,9 @@ export const CourseForm = () => {
                   }`}
                 />
               </FormControl>
-              <FormMessage />
+              <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                <FormMessage />
+              </div>
               <p className="text-xs text-gray-500">Mínimo de 3 caracteres</p>
             </FormItem>
           )}
@@ -94,7 +110,9 @@ export const CourseForm = () => {
                   }`}
                 />
               </FormControl>
-              <FormMessage />
+              <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                <FormMessage />
+              </div>
               <p className="text-xs text-gray-500">
                 {field.value?.length || 0}/500 caracteres
                 {(field.value?.length ?? 0) > 450 && (
@@ -138,7 +156,9 @@ export const CourseForm = () => {
                     />
                   </PopoverContent>
                 </Popover>
-                <FormMessage />
+                <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
@@ -175,7 +195,9 @@ export const CourseForm = () => {
                     />
                   </PopoverContent>
                 </Popover>
-                <FormMessage />
+                <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />

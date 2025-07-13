@@ -70,7 +70,9 @@ export const EditCourseForm = ({ id, initialData, setOpen, setCurrentCourse }: E
                   }`}
                 />
               </FormControl>
-              <FormMessage />
+              <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                <FormMessage />
+              </div>
             </FormItem>
           )}
         />
@@ -93,7 +95,9 @@ export const EditCourseForm = ({ id, initialData, setOpen, setCurrentCourse }: E
                   }`}
                 />
               </FormControl>
-              <FormMessage />
+              <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                <FormMessage />
+              </div>
             </FormItem>
           )}
         />
@@ -130,7 +134,9 @@ export const EditCourseForm = ({ id, initialData, setOpen, setCurrentCourse }: E
                     />
                   </PopoverContent>
                 </Popover>
-                <FormMessage />
+                <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
@@ -166,7 +172,9 @@ export const EditCourseForm = ({ id, initialData, setOpen, setCurrentCourse }: E
                     />
                   </PopoverContent>
                 </Popover>
-                <FormMessage />
+                <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />

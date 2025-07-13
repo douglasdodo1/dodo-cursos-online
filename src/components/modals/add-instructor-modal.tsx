@@ -105,7 +105,7 @@ export function AddInstructorModal({
           <CardContent className="space-y-4">
             <div className="flex gap-2">
               <Input
-                placeholder="Buscar por e‑mail"
+                placeholder="digite 'douglas'"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}

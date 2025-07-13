@@ -123,6 +123,18 @@ export default function CourseDetailsComponent() {
     console.log(currentCourse?.instructors);
   };
 
+  const handleDeleteCourse = async () => {
+    const stored = localStorage.getItem("courses");
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const updatedCourses = parsed.filter((c: CourseDto) => c.id !== currentCourse.id);
+      localStorage.setItem("courses", JSON.stringify(updatedCourses));
+    }
+
+    await router.push("/dashboard");
+  };
+
   const handleCreateInstructor = () => {
     setOpenCreateInstructorModal(true);
   };
@@ -178,7 +190,12 @@ export default function CourseDetailsComponent() {
                         </DropdownMenuItem>
 
                         <DropdownMenuItem className="text-gray-300 hover:bg-gray-800">
-                          <Button variant="destructive" size="sm" className="w-full text-gray-400 hover:text-white">
+                          <Button
+                            onClick={handleDeleteCourse}
+                            variant="destructive"
+                            size="sm"
+                            className="w-full text-gray-400 hover:text-white"
+                          >
                             <Trash className="mr-2 h-4 w-4" />
                             Excluir Curso
                           </Button>
