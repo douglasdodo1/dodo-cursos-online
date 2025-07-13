@@ -1,6 +1,6 @@
 import { CourseDto } from "@/dtos/course-dto";
 
-export const MockCourses = () => {
+export const MockCourses = async () => {
   const mockCourses: CourseDto[] = Array.from({ length: 12 }).map((_, index) => ({
     id: index + 1,
     name: `Curso ${index + 1}`,

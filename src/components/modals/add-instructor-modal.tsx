@@ -7,19 +7,25 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "../ui/label";
 import { InstructorsDto } from "@/dtos/instructors-dto";
-import { useCourseContext } from "@/app/contexts/course-context";
+import { CourseDto } from "@/dtos/course-dto";
 
 interface AddInstructorModalProps {
-  courseId: number;
+  currentCourse: CourseDto;
+  setCourse: React.Dispatch<React.SetStateAction<CourseDto>>;
   open: boolean;
   setOpen: (value: boolean) => void;
   setInstructors: Dispatch<SetStateAction<InstructorsDto[]>>;
 }
 
-export function AddInstructorModal({ courseId, open, setOpen, setInstructors }: AddInstructorModalProps) {
+export function AddInstructorModal({
+  currentCourse,
+  setCourse,
+  open,
+  setOpen,
+  setInstructors,
+}: AddInstructorModalProps) {
   const [search, setSearch] = useState("");
   const [foundInstructor, setFoundInstructor] = useState<InstructorsDto | null>(null);
-  const { courses, setCourses } = useCourseContext();
 
   const mockResults: InstructorsDto = {
     id: 5,
@@ -57,16 +63,33 @@ export function AddInstructorModal({ courseId, open, setOpen, setInstructors }: 
 
   function handleAdd() {
     if (!foundInstructor) return;
-    console.log(foundInstructor);
-    setCourses((prevCourses) =>
-      prevCourses.map((c) => (c.id === courseId ? { ...c, instructors: [...c.instructors, foundInstructor] } : c))
-    );
 
-    setInstructors((prev) => {
-      const newInstructors = [...prev, foundInstructor];
-      return newInstructors;
-    });
-    console.log(courses.find((c) => c.id === courseId)?.instructors);
+    console.log(foundInstructor);
+
+    setCourse((prev) => ({
+      ...prev,
+      instructors: [...prev.instructors, foundInstructor],
+    }));
+
+    setInstructors((prev) => [...prev, foundInstructor]);
+
+    const storedCourses = localStorage.getItem("courses");
+    if (storedCourses) {
+      const parsedCourses = JSON.parse(storedCourses);
+
+      const updatedCourses = parsedCourses.map((course: CourseDto) => {
+        if (course.id === currentCourse.id) {
+          return {
+            ...course,
+            instructors: [...(course.instructors ?? []), foundInstructor],
+          };
+        }
+        return course;
+      });
+
+      localStorage.setItem("courses", JSON.stringify(updatedCourses));
+    }
+
     setOpen(false);
   }
 

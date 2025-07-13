@@ -7,20 +7,32 @@ import { Trash } from "lucide-react";
 import { useSessionContext } from "@/app/contexts/session-context";
 
 type InstructorProps = {
-  instructor: InstructorsDto;
   course: CourseDto | undefined;
+  instructor: InstructorsDto;
   instructors: InstructorsDto[];
   setInstructors: React.Dispatch<React.SetStateAction<InstructorsDto[]>>;
 };
 
-export const InstrutorCard = ({ instructor, course, instructors, setInstructors }: InstructorProps) => {
+export const InstrutorCard = ({ course, instructor, instructors, setInstructors }: InstructorProps) => {
   const { session } = useSessionContext();
   const user = session;
 
   const isCreator = user?.id === course?.creator?.id;
 
   const handleDeleteInstructor = () => {
-    const updated = instructors.filter((inst) => inst.id !== instructor.id);
+    const updated = instructors.filter((inst) => inst.id !== instructor?.id);
+    const stored = localStorage.getItem("courses");
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const updatedCourses = parsed.map((c: CourseDto) => {
+        if (c.id === course?.id) {
+          return { ...c, instructors: updated };
+        }
+        return c;
+      });
+      localStorage.setItem("courses", JSON.stringify(updatedCourses));
+    }
     setInstructors(updated);
   };
 

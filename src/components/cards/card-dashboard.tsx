@@ -22,6 +22,13 @@ export const CardDashboard = ({ course, handleCourseClick, setCourses }: CardDas
 
   const handleDeleteCourse = async () => {
     setCourses((prevCourses) => prevCourses.filter((c) => c.id !== course.id));
+    const stored = localStorage.getItem("courses");
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const updatedCourses = parsed.filter((c: CourseDto) => c.id !== course.id);
+      localStorage.setItem("courses", JSON.stringify(updatedCourses));
+    }
   };
 
   return (

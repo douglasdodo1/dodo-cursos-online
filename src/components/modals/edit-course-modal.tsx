@@ -5,13 +5,14 @@ import { EditCourseForm } from "../forms/edit-course-form";
 import { CourseDto } from "@/dtos/course-dto";
 
 interface EditCourseModalProps {
+  id: number;
   open: boolean;
   setOpen: (value: boolean) => void;
   initialData: Partial<CourseFormData>;
   setCurrentCourse: React.Dispatch<React.SetStateAction<CourseDto>>;
 }
 
-export function EditCourseModal({ open, setOpen, initialData, setCurrentCourse }: EditCourseModalProps) {
+export function EditCourseModal({ id, open, setOpen, initialData, setCurrentCourse }: EditCourseModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogOverlay className="fixed inset-0 bg-black bg-opacity-70" />
@@ -21,7 +22,7 @@ export function EditCourseModal({ open, setOpen, initialData, setCurrentCourse }
           <DialogTitle className="text-white text-2xl">Editar Curso</DialogTitle>
         </DialogHeader>
 
-        <EditCourseForm initialData={initialData} setOpen={setOpen} setCurrentCourse={setCurrentCourse} />
+        <EditCourseForm id={id} initialData={initialData} setOpen={setOpen} setCurrentCourse={setCurrentCourse} />
       </DialogContent>
     </Dialog>
   );

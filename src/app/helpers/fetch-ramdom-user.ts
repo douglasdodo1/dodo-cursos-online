@@ -8,7 +8,7 @@ function getRandomExpertises(): string[] {
 
 export async function fetchRandomUser(): Promise<InstructorsDto | undefined> {
   try {
-    const response = await fetch("https://randomuser.me/api/");
+    const response = await fetch("https://randomuser.me/api/?results=5");
     if (!response.ok) {
       throw new Error("Erro ao buscar usuário");
     }

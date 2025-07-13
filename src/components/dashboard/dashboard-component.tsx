@@ -6,9 +6,8 @@ import { useEffect, useState } from "react";
 import { CourseDto } from "@/dtos/course-dto";
 import { Label } from "../ui/label";
 import { useSessionContext } from "@/app/contexts/session-context";
-import { CardDashboard } from "./card-dashboard";
+import { CardDashboard } from "../cards/card-dashboard";
 import { useRouter } from "next/navigation";
-import { useCourseContext } from "@/app/contexts/course-context";
 
 export function DashboardComponent() {
   type filterStatusType = "all" | "my" | "arquived";
@@ -18,12 +17,19 @@ export function DashboardComponent() {
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<filterStatusType>("all");
-  const { courses, setCourses } = useCourseContext();
+  const [courses, setCourses] = useState<CourseDto[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const coursesPerPage: number = 6;
   const [totalPages, setTotalPages] = useState<number>(1);
   const [paginatedCourses, setPaginatedCourses] = useState<CourseDto[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<CourseDto[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("courses");
+    if (stored) {
+      setCourses(JSON.parse(stored));
+    }
+  }, []);
 
   useEffect(() => {
     let filtered = [];

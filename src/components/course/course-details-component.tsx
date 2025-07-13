@@ -17,13 +17,12 @@ import { formatDate } from "@/app/helpers/format-date";
 import Image from "next/image";
 import { getDuration } from "@/app/helpers/get-duration";
 import { lessonDto } from "@/dtos/lesson-dto";
-import { InstrutorCard } from "./instructor-card";
+import { InstrutorCard } from "../cards/instructor-card";
 import { LessonTypeComponent } from "./lesson-type-component";
 import { AddInstructorModal } from "../modals/add-instructor-modal";
 import { InstructorsDto } from "@/dtos/instructors-dto";
 import { EditCourseModal } from "../modals/edit-course-modal";
 import { usePathname, useRouter } from "next/navigation";
-import { useCourseContext } from "@/app/contexts/course-context";
 
 const lessons: lessonDto[] = [
   {
@@ -72,7 +71,6 @@ export default function CourseDetailsComponent() {
   const [openCreateInstructorModal, setOpenCreateInstructorModal] = useState(false);
   const [instructors, setInstructors] = useState<InstructorsDto[]>([]);
   const [openEditCourseModal, setOpenEditCourseModal] = useState(false);
-  const { courses } = useCourseContext();
   const pathname = usePathname();
   const id = pathname ? Number(pathname.split("/")[2]) : NaN;
 
@@ -82,7 +80,10 @@ export default function CourseDetailsComponent() {
     description: "",
     start_date: new Date(),
     end_date: new Date(),
-    creator: { id: 0, name: "", email: "" },
+    creator: {
+      name: "",
+      email: "",
+    },
     instructors: [],
   });
 
@@ -104,21 +105,22 @@ export default function CourseDetailsComponent() {
   }, [searchTerm, statusFilter, currentPage]);
 
   useEffect(() => {
-    if (!isNaN(id)) {
-      const course = courses.find((c) => c.id === id);
-      if (course) {
-        setCurrentCourse(course);
-      }
+    const stored = localStorage.getItem("courses");
+    if (stored) {
+      const courses = JSON.parse(stored);
+      const course = courses.find((course: CourseDto) => course.id === id);
+      setCurrentCourse(course);
+      setInstructors(course.instructors ?? []);
     }
-  }, [courses, id]);
+  }, [id]);
 
-  const isCreator = user?.id === currentCourse.creator?.id;
+  const isCreator = user?.id === currentCourse?.creator?.id;
   const canEdit = isCreator;
   const canManageInstructors = isCreator;
 
   const handleEditCourse = () => {
     setOpenEditCourseModal(true);
-    console.log(currentCourse.instructors);
+    console.log(currentCourse?.instructors);
   };
 
   const handleCreateInstructor = () => {
@@ -153,7 +155,7 @@ export default function CourseDetailsComponent() {
                   </Button>
 
                   <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">{currentCourse.name}</h1>
+                    <h1 className="text-3xl font-bold text-white mb-2">{currentCourse?.name}</h1>
                   </div>
                   {canEdit && (
                     <DropdownMenu>
@@ -185,6 +187,7 @@ export default function CourseDetailsComponent() {
                     </DropdownMenu>
                   )}
                   <EditCourseModal
+                    id={currentCourse?.id}
                     open={openEditCourseModal}
                     setOpen={setOpenEditCourseModal}
                     initialData={currentCourse}
@@ -198,7 +201,7 @@ export default function CourseDetailsComponent() {
                       <Calendar className="h-4 w-4 text-green-400" />
                       <div>
                         <p className="text-xs text-gray-500">Início</p>
-                        <p className="text-sm font-medium text-white">{formatDate(currentCourse.start_date)}</p>
+                        <p className="text-sm font-medium text-white">{formatDate(currentCourse?.start_date)}</p>
                       </div>
                     </div>
                   </div>
@@ -207,7 +210,7 @@ export default function CourseDetailsComponent() {
                       <Calendar className="h-4 w-4 text-red-400" />
                       <div>
                         <p className="text-xs text-gray-500">Término</p>
-                        <p className="text-sm font-medium text-white">{formatDate(currentCourse.end_date)}</p>
+                        <p className="text-sm font-medium text-white">{formatDate(currentCourse?.end_date)}</p>
                       </div>
                     </div>
                   </div>
@@ -226,7 +229,7 @@ export default function CourseDetailsComponent() {
                       <div>
                         <p className="text-xs text-gray-500">Duração</p>
                         <p className="text-sm font-medium text-white">
-                          {getDuration(currentCourse.start_date, currentCourse.end_date)}
+                          {getDuration(currentCourse?.start_date, currentCourse?.end_date)}
                         </p>
                       </div>
                     </div>
@@ -267,7 +270,7 @@ export default function CourseDetailsComponent() {
                 <CardTitle className="text-white">Descrição do curso</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-300 leading-relaxed">{currentCourse.description}</p>
+                <p className="text-gray-300 leading-relaxed">{currentCourse?.description}</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -299,7 +302,8 @@ export default function CourseDetailsComponent() {
                 </Button>
               )}
               <AddInstructorModal
-                courseId={id}
+                currentCourse={currentCourse}
+                setCourse={setCurrentCourse}
                 open={openCreateInstructorModal}
                 setOpen={setOpenCreateInstructorModal}
                 setInstructors={setInstructors}
@@ -312,8 +316,8 @@ export default function CourseDetailsComponent() {
                   key={instructor.id}
                   instructor={instructor}
                   course={currentCourse}
-                  setInstructors={setInstructors}
                   instructors={instructors}
+                  setInstructors={setInstructors}
                 />
               ))}
             </div>

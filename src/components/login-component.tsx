@@ -40,8 +40,10 @@ export const LoginComponent = ({ setIsLogin }: LoginComponentProps) => {
     console.log(data);
     await sleep(2000);
     setSession({ id: 1, nome: "dodo", email: "dodo@example.com", token: "123" });
-    setCourses(MockCourses());
-    await router.push("/dashboard");
+    const courses = await MockCourses();
+    setCourses(courses);
+    localStorage.setItem("courses", JSON.stringify(courses));
+    router.push("/dashboard");
     setIsLoading(false);
   };
 

@@ -22,6 +22,7 @@ type FormProps = {
 export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const router = useRouter();
 
   const mockLesson: lessonDto = {

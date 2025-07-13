@@ -1,9 +1,10 @@
-export const getDuration = (start: Date | undefined, end: Date | undefined): number | null => {
-  if (start === undefined || end === undefined) {
-    return null;
-  }
-  const diff = end.getTime() - start.getTime();
+export const getDuration = (start: Date | string, end: Date | string): number | null => {
+  if (!start || !end) return null;
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  const diff = endDate.getTime() - startDate.getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));
-  const duration = hours;
-  return duration;
+  return hours;
 };

@@ -1,4 +1,7 @@
-export const formatDate = (date: Date | undefined): string => {
-  if (date === undefined) return "";
-  return date.toLocaleDateString("pt-BR");
-};
+export function formatDate(date: string | Date | undefined): string {
+  if (date === undefined) {
+    return "";
+  }
+  const parsedDate = typeof date === "string" ? new Date(date) : date;
+  return parsedDate.toLocaleDateString("pt-BR");
+}

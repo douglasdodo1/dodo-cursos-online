@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { Button } from "../ui/button";
 import { TabsContent } from "../ui/tabs";
 import { Input } from "../ui/input";
-import { LessonCard } from "./lesson-card";
+import { LessonCard } from "../cards/lesson-card";
 import { lessonDto } from "@/dtos/lesson-dto";
 import { useState } from "react";
 import LessonComponent from "../modals/add-lesson-modal";

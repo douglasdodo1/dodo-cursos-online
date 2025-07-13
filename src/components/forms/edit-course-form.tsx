@@ -21,12 +21,13 @@ const partialCourseSchema = courseSchema.partial();
 export type PartialCourseFormData = z.infer<typeof partialCourseSchema>;
 
 interface EditCourseFormProps {
+  id: number;
   initialData: PartialCourseFormData;
   setOpen: (value: boolean) => void;
   setCurrentCourse: React.Dispatch<React.SetStateAction<CourseDto>>;
 }
 
-export const EditCourseForm = ({ initialData, setOpen, setCurrentCourse }: EditCourseFormProps) => {
+export const EditCourseForm = ({ id, initialData, setOpen, setCurrentCourse }: EditCourseFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<PartialCourseFormData>({
@@ -38,6 +39,12 @@ export const EditCourseForm = ({ initialData, setOpen, setCurrentCourse }: EditC
     setIsLoading(true);
     await new Promise((r) => setTimeout(r, 1000));
     setCurrentCourse((prev) => ({ ...prev, ...data }));
+    const stored = localStorage.getItem("courses");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const updatedCourses = parsed.map((c: CourseDto) => (c.id === id ? { ...c, ...data } : c));
+      localStorage.setItem("courses", JSON.stringify(updatedCourses));
+    }
     setIsLoading(false);
     setOpen(false);
   };
