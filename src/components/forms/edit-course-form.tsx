@@ -17,7 +17,19 @@ import { courseSchema } from "../schemas/course-schema";
 import { z } from "zod";
 import { CourseDto } from "@/dtos/course-dto";
 
-const partialCourseSchema = courseSchema.partial();
+const partialCourseSchema = courseSchema.partial().refine(
+  (data) => {
+    if (data.start_date && data.end_date) {
+      return new Date(data.end_date) >= new Date(data.start_date);
+    }
+    return true;
+  },
+  {
+    message: "A data de término deve ser posterior ou igual à data de início.",
+    path: ["end_date"],
+  }
+);
+
 export type PartialCourseFormData = z.infer<typeof partialCourseSchema>;
 
 interface EditCourseFormProps {
@@ -32,7 +44,11 @@ export const EditCourseForm = ({ id, initialData, setOpen, setCurrentCourse }: E
 
   const form = useForm<PartialCourseFormData>({
     resolver: zodResolver(partialCourseSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      ...initialData,
+      start_date: initialData.start_date ? new Date(initialData.start_date) : undefined,
+      end_date: initialData.end_date ? new Date(initialData.end_date) : undefined,
+    },
   });
 
   const handleSubmit = async (data: PartialCourseFormData) => {
@@ -128,7 +144,7 @@ export const EditCourseForm = ({ id, initialData, setOpen, setCurrentCourse }: E
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={field.onChange}
+                      onSelect={(date) => field.onChange(date)}
                       captionLayout="dropdown"
                       className="bg-black/90 text-white rounded-lg"
                     />
@@ -166,7 +182,7 @@ export const EditCourseForm = ({ id, initialData, setOpen, setCurrentCourse }: E
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={field.onChange}
+                      onSelect={(date) => field.onChange(date)}
                       captionLayout="dropdown"
                       className="bg-black/90 text-white rounded-lg"
                     />
