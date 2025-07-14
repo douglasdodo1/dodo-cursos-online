@@ -1,5 +1,5 @@
 "use client";
-import { useSessionContext } from "@/app/contexts/session-context";
+import { useSessionContext } from "@/contexts/session-context";
 import { NavbarComponent } from "@/components/navbar-component";
 import { NewCourseComponent } from "@/components/new-course-component";
 import { useRouter } from "next/navigation";

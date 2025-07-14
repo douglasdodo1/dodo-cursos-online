@@ -10,12 +10,12 @@ import {
 import { Edit, MoreVertical, Users, Calendar, Clock, Plus, Trash, ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CourseDto } from "@/dtos/course-dto";
-import { useSessionContext } from "@/app/contexts/session-context";
+import { useSessionContext } from "@/contexts/session-context";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDate } from "@/app/helpers/format-date";
+import { formatDate } from "@/helpers/format-date";
 import Image from "next/image";
-import { getDuration } from "@/app/helpers/get-duration";
+import { getDuration } from "@/helpers/get-duration";
 import { lessonDto } from "@/dtos/lesson-dto";
 import { InstrutorCard } from "../cards/instructor-card";
 import { LessonTypeComponent } from "./lesson-type-component";

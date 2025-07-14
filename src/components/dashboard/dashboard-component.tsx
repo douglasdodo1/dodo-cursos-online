@@ -5,7 +5,7 @@ import { Input } from "../ui/input";
 import { useEffect, useState } from "react";
 import { CourseDto } from "@/dtos/course-dto";
 import { Label } from "../ui/label";
-import { useSessionContext } from "@/app/contexts/session-context";
+import { useSessionContext } from "@/contexts/session-context";
 import { CardDashboard } from "../cards/card-dashboard";
 import { useRouter } from "next/navigation";
 

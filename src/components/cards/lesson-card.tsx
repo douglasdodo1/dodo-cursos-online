@@ -1,5 +1,5 @@
-import { getStatusColor } from "@/app/helpers/get-status-color";
-import { getStatusText } from "@/app/helpers/get-status-text";
+import { getStatusColor } from "@/helpers/get-status-color";
+import { getStatusText } from "@/helpers/get-status-text";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,7 +15,7 @@ import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 import { useEffect, useState } from "react";
 import { EditLessonModal } from "../modals/edit-lesson-modal";
-import { useSessionContext } from "@/app/contexts/session-context";
+import { useSessionContext } from "@/contexts/session-context";
 
 type LessonCardProps = {
   lesson: lessonDto;

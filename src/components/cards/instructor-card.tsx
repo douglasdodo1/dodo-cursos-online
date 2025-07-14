@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { CourseDto } from "@/dtos/course-dto";
 import { Trash } from "lucide-react";
-import { useSessionContext } from "@/app/contexts/session-context";
+import { useSessionContext } from "@/contexts/session-context";
 
 type InstructorProps = {
   course: CourseDto | undefined;

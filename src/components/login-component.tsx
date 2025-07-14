@@ -9,10 +9,10 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthFormData, authSchema } from "./schemas/auth-schema";
 import Image from "next/image";
-import { useSessionContext } from "@/app/contexts/session-context";
+import { useSessionContext } from "@/contexts/session-context";
 import { useRouter } from "next/navigation";
-import { MockCourses } from "@/app/helpers/mock-courses";
-import { useCourseContext } from "@/app/contexts/course-context";
+import { MockCourses } from "@/helpers/mock-courses";
+import { useCourseContext } from "@/contexts/course-context";
 
 interface LoginComponentProps {
   setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;

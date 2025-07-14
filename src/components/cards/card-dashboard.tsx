@@ -5,8 +5,8 @@ import { Button } from "../ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { CourseDto } from "@/dtos/course-dto";
 import Image from "next/image";
-import { formatDate } from "@/app/helpers/format-date";
-import { useSessionContext } from "@/app/contexts/session-context";
+import { formatDate } from "@/helpers/format-date";
+import { useSessionContext } from "@/contexts/session-context";
 
 type CardDashboardProps = {
   course: CourseDto;
