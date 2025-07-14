@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import "../../globals.css";
+import "../globals.css";
 import { Metadata } from "next";
 
 const geistSans = Geist({
@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dodo novo Cursos Online",
+  title: "Dodo Cursos Dashboard",
   description: "Create by Dodo",
 };
 
-export default function Layout({
+export default function dashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
