@@ -1,4 +1,5 @@
 "use client";
+import React, { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { FileText, Type, Loader2, Save, CalendarIcon } from "lucide-react";
@@ -7,57 +8,94 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
 import { format } from "date-fns";
-import { CourseFormData, courseSchema } from "../schemas/course-schema";
-import { CourseDto } from "@/dtos/course-dto";
 import { Calendar } from "../ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CourseFormData, courseSchema } from "../schemas/course-schema";
+import { toast } from "sonner";
+import { CourseDto } from "@/dtos/course-dto";
+import { courseService } from "@/service/courses-api";
 
-export const CourseForm = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+interface CourseFormProps {
+  courseId?: number;
+  onSuccess?: () => void;
+}
 
+export const CourseForm = ({ courseId, onSuccess }: CourseFormProps) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const mockCourse: CourseDto = {
-    id: Math.floor(Math.random() * 1000) + 1,
-    name: "React Avançado",
-    description: "Curso de React Avançado",
-    start_date: new Date(),
-    end_date: new Date(),
-    instructors: [],
-  };
+  const { data: existingCourse, isLoading: isLoadingCourse } = useQuery({
+    queryKey: ["course", courseId],
+    queryFn: () => (courseId ? courseService.getById(courseId) : null),
+    enabled: !!courseId,
+  });
+
+  const { mutate: saveCourse, isPending: isSaving } = useMutation({
+    mutationFn: async (data: CourseFormData) => {
+      if (courseId) {
+        return courseService.update(courseId, data as Omit<CourseDto, "id">);
+      }
+      return courseService.create(data as Omit<CourseDto, "id">);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      toast(courseId ? "Curso atualizado com sucesso!" : "Curso criado com sucesso!");
+      onSuccess?.();
+      if (!courseId) {
+        router.push("/dashboard");
+      }
+    },
+    onError: (error) => {
+      console.error("Erro ao salvar curso:", error);
+      toast.error("Ocorreu um erro ao salvar o curso. Tente novamente.");
+    },
+  });
 
   const refinedSchema = courseSchema.refine((data) => data.start_date <= data.end_date, {
     message: "Data de início deve ser anterior ou igual à data de término",
     path: ["start_date"],
   });
 
+  const defaultValues = {
+    name: "",
+    description: "",
+    start_date: new Date(),
+    end_date: new Date(),
+  };
+
   const form = useForm<CourseFormData>({
     resolver: zodResolver(refinedSchema),
-    defaultValues: mockCourse,
+    defaultValues,
   });
 
-  const handleSubmit = async (data: CourseFormData) => {
-    setIsLoading(true);
-    console.log(data);
-    await sleep(2000);
-    const stored = localStorage.getItem("courses");
-
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      const updatedCourses = [...parsed, data];
-      localStorage.setItem("courses", JSON.stringify(updatedCourses));
+  useEffect(() => {
+    if (existingCourse) {
+      form.reset({
+        name: existingCourse.name,
+        description: existingCourse.description,
+        start_date: new Date(existingCourse.start_date),
+        end_date: new Date(existingCourse.end_date),
+      });
     }
+  }, [existingCourse, form]);
 
-    router.push("/dashboard");
-    setIsLoading(false);
+  const handleSubmit = async (data: CourseFormData) => {
+    saveCourse(data);
   };
 
   const handleCancel = () => {
     router.back();
   };
+
+  if (isLoadingCourse) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -75,7 +113,7 @@ export const CourseForm = () => {
                 <Input
                   {...field}
                   placeholder="Ex: React Avançado - Hooks e Performance"
-                  disabled={isLoading}
+                  disabled={isSaving || isLoadingCourse}
                   className={`h-12 bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 transition-all duration-200 ${
                     fieldState.error
                       ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
@@ -104,7 +142,7 @@ export const CourseForm = () => {
                 <Textarea
                   {...field}
                   placeholder="Descreva o conteúdo e objetivos do curso..."
-                  disabled={isLoading}
+                  disabled={isSaving || isLoadingCourse}
                   className={`min-h-[120px] bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 transition-all duration-200 resize-none ${
                     fieldState.error
                       ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
@@ -141,7 +179,7 @@ export const CourseForm = () => {
                       <Button
                         variant={null}
                         className="h-12 w-full bg-black/40 backdrop-blur-sm border-2 border-gray-700 text-white placeholder:text-gray-500 px-3 flex items-center"
-                        disabled={isLoading}
+                        disabled={isSaving || isLoadingCourse}
                       >
                         {field.value ? format(field.value, "dd/MM/yyyy") : "Escolha data"}
                         <CalendarIcon className="ml-auto h-5 w-5 text-gray-400" />
@@ -179,7 +217,7 @@ export const CourseForm = () => {
                     <FormControl>
                       <Button
                         variant={null}
-                        disabled={isLoading}
+                        disabled={isSaving || isLoadingCourse}
                         className="h-12 w-full bg-black/40 backdrop-blur-sm border-2 border-gray-700 text-white placeholder:text-gray-500 px-3 flex items-center"
                       >
                         {field.value ? format(field.value, "dd/MM/yyyy") : "Escolha data"}
@@ -210,25 +248,25 @@ export const CourseForm = () => {
             type="button"
             variant="outline"
             onClick={handleCancel}
-            disabled={isLoading}
+            disabled={isSaving || isLoadingCourse}
             className="flex-1 h-12 border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isSaving || isLoadingCourse}
             className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold shadow-lg shadow-green-500/25 transition-all duration-200"
           >
-            {isLoading ? (
+            {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Criando...
+                {courseId ? "Salvando..." : "Criando..."}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-5 w-5" />
-                Criar Curso
+                {courseId ? "Salvar Alterações" : "Criar Curso"}
               </>
             )}
           </Button>
