@@ -50,6 +50,7 @@ export const CourseForm = () => {
       const updatedCourses = [...parsed, data];
       localStorage.setItem("courses", JSON.stringify(updatedCourses));
     }
+    router.push("/dashboard");
     setIsLoading(false);
   };
 
