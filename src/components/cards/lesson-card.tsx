@@ -110,12 +110,7 @@ export const LessonCard = ({ lesson, setLessons }: LessonCardProps) => {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <EditLessonModal
-            open={openEditCourseModal}
-            setIsOpen={setOpenEditCourseModal}
-            initialData={lesson}
-            setLessons={setLessons}
-          />
+          <EditLessonModal open={openEditCourseModal} setIsOpen={setOpenEditCourseModal} initialData={lesson} />
         </div>
       </CardContent>
     </Card>
