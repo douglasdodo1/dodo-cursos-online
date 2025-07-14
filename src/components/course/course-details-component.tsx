@@ -7,72 +7,54 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@radix-ui/react-dropdown-menu";
-import { Edit, MoreVertical, Users, Calendar, Clock, Plus, Trash, ChevronLeft } from "lucide-react";
+import { Edit, MoreVertical, Users, Calendar, Clock, Plus, Trash, ChevronLeft, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CourseDto } from "@/dtos/course-dto";
-import { useSessionContext } from "@/contexts/session-context";
-
+import { useSessionContext } from "../../contexts/session-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDate } from "@/helpers/format-date";
 import Image from "next/image";
-import { getDuration } from "@/helpers/get-duration";
 import { lessonDto } from "@/dtos/lesson-dto";
 import { InstrutorCard } from "../cards/instructor-card";
 import { LessonTypeComponent } from "./lesson-type-component";
 import { AddInstructorModal } from "../modals/add-instructor-modal";
 import { InstructorsDto } from "@/dtos/instructors-dto";
-import { EditCourseModal } from "../modals/edit-course-modal";
 import { usePathname, useRouter } from "next/navigation";
-
-const lessons: lessonDto[] = [
-  {
-    id: 1,
-    title: "Introdução aos Hooks Avançados",
-    description: "Visão geral dos hooks customizados e quando utilizá-los",
-    duration: 15,
-    status: "published",
-    video_url: "/placeholder.svg?height=120&width=200",
-    order: 1,
-    course_id: 1,
-    creator_id: 1,
-  },
-  {
-    id: 2,
-    title: "Introdução aos Hooks Avançados",
-    description: "Visão geral dos hooks customizados e quando utilizá-los",
-    duration: 15,
-    status: "draft",
-    video_url: "/placeholder.svg?height=120&width=200",
-    order: 1,
-    course_id: 2,
-    creator_id: 3,
-  },
-  {
-    id: 3,
-    title: "Introdução aos Hooks Avançados",
-    description: "Visão geral dos hooks customizados e quando utilizá-los",
-    duration: 15,
-    status: "archived",
-    video_url: "/placeholder.svg?height=120&width=200",
-    order: 1,
-    course_id: 3,
-    creator_id: 2,
-  },
-];
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { lessonService } from "@/service/lessons-api";
+import { formatDate } from "@/helpers/format-date";
+import { getDuration } from "@/helpers/get-duration";
+import { LessonForm } from "../forms/lesson-form";
+import { EditCourseModal } from "../modals/edit-course-modal";
 
 const LESSONS_PER_PAGE = 6;
 
 export default function CourseDetailsComponent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "archived">("all");
-  const [filteredLessons, setFilteredLessons] = useState<lessonDto[]>(lessons);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("overview");
   const [openCreateInstructorModal, setOpenCreateInstructorModal] = useState(false);
+  const [openEditLessonModal, setOpenEditLessonModal] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<lessonDto | null>(null);
   const [instructors, setInstructors] = useState<InstructorsDto[]>([]);
   const [openEditCourseModal, setOpenEditCourseModal] = useState(false);
+
   const pathname = usePathname();
   const id = pathname ? Number(pathname.split("/")[2]) : NaN;
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const { session } = useSessionContext();
+  const user = session;
+
+  const { data: lessons = [], isLoading: isLoadingLessons } = useQuery({
+    queryKey: ["lessons", id],
+    queryFn: () => lessonService.listByCourse(id),
+    enabled: !!id,
+  });
+
+  const [filteredLessons, setFilteredLessons] = useState<lessonDto[]>([]);
+  const [paginatedLessons, setPaginatedLessons] = useState<lessonDto[]>([]);
 
   const [currentCourse, setCurrentCourse] = useState<CourseDto>({
     id: 0,
@@ -87,30 +69,27 @@ export default function CourseDetailsComponent() {
     instructors: [],
   });
 
-  const [paginatedLessons, setPaginatedLessons] = useState<lessonDto[]>(lessons);
-  const router = useRouter();
-
-  const { session } = useSessionContext();
-  const user = session;
-  const totalPages = Math.ceil(filteredLessons.length / LESSONS_PER_PAGE);
-
   useEffect(() => {
-    const filtered = lessons.filter((lesson) => {
-      const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "all" || lesson.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-    setFilteredLessons(filtered);
-    setPaginatedLessons(filtered.slice((currentPage - 1) * LESSONS_PER_PAGE, currentPage * LESSONS_PER_PAGE));
-  }, [searchTerm, statusFilter, currentPage]);
+    if (lessons) {
+      const filtered = lessons.filter((lesson) => {
+        const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === "all" || lesson.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      });
+      setFilteredLessons(filtered);
+      setPaginatedLessons(filtered.slice((currentPage - 1) * LESSONS_PER_PAGE, currentPage * LESSONS_PER_PAGE));
+    }
+  }, [lessons, searchTerm, statusFilter, currentPage]);
 
   useEffect(() => {
     const stored = localStorage.getItem("courses");
     if (stored) {
       const courses = JSON.parse(stored);
       const course = courses.find((course: CourseDto) => course.id === id);
-      setCurrentCourse(course);
-      setInstructors(course.instructors ?? []);
+      if (course) {
+        setCurrentCourse(course);
+        setInstructors(course.instructors ?? []);
+      }
     }
   }, [id]);
 
@@ -120,7 +99,6 @@ export default function CourseDetailsComponent() {
 
   const handleEditCourse = () => {
     setOpenEditCourseModal(true);
-    console.log(currentCourse?.instructors);
   };
 
   const handleDeleteCourse = async () => {
@@ -142,6 +120,21 @@ export default function CourseDetailsComponent() {
   const handleDashboard = async () => {
     await router.push("/dashboard");
   };
+
+  const handleSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["lessons", id] });
+    setOpenEditLessonModal(false);
+    setEditingLesson(null);
+    toast.success("Aula salva com sucesso!");
+  };
+
+  if (isLoadingLessons) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-black via-gray-900 to-black justify-center items-start pt-12">
@@ -203,13 +196,6 @@ export default function CourseDetailsComponent() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
-                  <EditCourseModal
-                    id={currentCourse?.id}
-                    open={openEditCourseModal}
-                    setOpen={setOpenEditCourseModal}
-                    initialData={currentCourse}
-                    setCurrentCourse={setCurrentCourse}
-                  />
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -270,7 +256,7 @@ export default function CourseDetailsComponent() {
                 value="lessons"
                 className="text-amber-50 data-[state=active]:bg-green-600 data-[state=active]:text-black"
               >
-                Aulas ({lessons.length})
+                Aulas ({lessons?.length || 0})
               </TabsTrigger>
               <TabsTrigger
                 value="instructors"
@@ -292,19 +278,36 @@ export default function CourseDetailsComponent() {
             </Card>
           </TabsContent>
 
-          <LessonTypeComponent
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            canEdit={canEdit}
-            paginatedLessons={paginatedLessons}
-            totalPages={totalPages}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            course={currentCourse}
-            setPaginatedLessons={setPaginatedLessons}
-          />
+          <TabsContent value="lessons" className="space-y-6">
+            {canEdit && (
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    setEditingLesson(null);
+                    setOpenEditLessonModal(true);
+                  }}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Aula
+                </Button>
+              </div>
+            )}
+
+            <LessonTypeComponent
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              canEdit={canEdit}
+              paginatedLessons={paginatedLessons}
+              totalPages={Math.ceil(filteredLessons.length / LESSONS_PER_PAGE)}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              course={currentCourse}
+              setPaginatedLessons={setPaginatedLessons}
+            />
+          </TabsContent>
 
           <TabsContent value="instructors" className="space-y-6">
             <div className="flex items-center justify-between">
@@ -340,6 +343,38 @@ export default function CourseDetailsComponent() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Edit/Create Lesson Modal */}
+        {openEditLessonModal && (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">{editingLesson ? "Editar Aula" : "Nova Aula"}</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setOpenEditLessonModal(false);
+                    setEditingLesson(null);
+                  }}
+                  className="text-gray-400 hover:text-white"
+                >
+                  ✕
+                </Button>
+              </div>
+
+              <LessonForm
+                courseId={currentCourse.id}
+                creatorId={user?.id || 0}
+                lessonId={editingLesson?.id}
+                initialData={editingLesson || undefined}
+                onSuccess={handleSuccess}
+              />
+            </div>
+          </div>
+        )}
+
+        <EditCourseModal id={currentCourse?.id} open={openEditCourseModal} setOpen={setOpenEditCourseModal} />
       </main>
     </div>
   );

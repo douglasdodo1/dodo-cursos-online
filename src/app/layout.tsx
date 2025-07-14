@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "../contexts/session-context";
-import { CourseProvider } from "../contexts/course-context";
+import { Providers } from "@/providers/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Dodo Cursos Online",
-  description: "Created by Douglas Gemir",
+  description: "Create by Dodo",
 };
 
 export default function RootLayout({
@@ -25,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-BR" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative min-h-screen bg-gradient-to-br from-black via-gray-900 to-black`}
       >
@@ -35,11 +34,9 @@ export default function RootLayout({
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-green-500/5 to-emerald-500/5 rounded-full blur-3xl"></div>
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
         </div>
-        <SessionProvider>
-          <CourseProvider>
-            <div className="relative z-10">{children}</div>
-          </CourseProvider>
-        </SessionProvider>
+        <Providers>
+          <div className="relative z-10">{children}</div>
+        </Providers>
       </body>
     </html>
   );

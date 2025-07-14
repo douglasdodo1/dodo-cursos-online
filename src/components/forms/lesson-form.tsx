@@ -1,4 +1,5 @@
 "use client";
+import React, { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { FileText, Type, Loader2, Save, Video, Hash, Clock } from "lucide-react";
@@ -7,61 +8,101 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
-import { lessonDto } from "@/dtos/lesson-dto";
 import { LessonFormData, lessonSchema } from "../schemas/lesson-schema";
-import React from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { lessonDto } from "@/dtos/lesson-dto";
+import { lessonService } from "@/service/lessons-api";
 
-type FormProps = {
+type LessonFormProps = {
   courseId: number;
   creatorId: number;
-  setLessons: React.Dispatch<React.SetStateAction<lessonDto[]>>;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  lessonId?: number;
+  initialData?: Omit<lessonDto, "id" | "course_id" | "creator_id"> & {
+    id?: number;
+    course_id?: number;
+    creator_id?: number;
+  };
+  onSuccess?: (savedLesson: lessonDto) => void;
 };
 
-export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
+export const LessonForm = ({ courseId, creatorId, lessonId, initialData, onSuccess }: LessonFormProps) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
 
-  const mockLesson: lessonDto = {
-    id: 1,
-    title: "React Avançado",
-    status: "published",
-    description: "Curso de React Avançado",
-    order: 1,
-    video_url: "https://www.youtube.com/watch?v=1",
-    duration: 120,
-    course_id: courseId,
-    creator_id: creatorId,
-  };
+  const { data: existingLesson, isLoading: isLoadingLesson } = useQuery({
+    queryKey: ["lesson", lessonId],
+    queryFn: async () => {
+      if (!lessonId) return undefined;
+      const lesson = await lessonService.getById(lessonId);
+      if (!lesson) throw new Error("Aula não encontrada");
+      return lesson;
+    },
+    initialData: initialData,
+    enabled: !!lessonId && !initialData,
+  });
+
+  const { mutate: saveLesson, isPending: isSaving } = useMutation({
+    mutationFn: async (data: LessonFormData) => {
+      if (lessonId) {
+        return lessonService.update(lessonId, { ...data, course_id: courseId, creator_id: creatorId });
+      }
+      return lessonService.create({ ...data, course_id: courseId, creator_id: creatorId });
+    },
+    onSuccess: (savedLesson) => {
+      queryClient.invalidateQueries({ queryKey: ["lessons", courseId] });
+      toast.success(lessonId ? "Aula atualizada com sucesso!" : "Aula criada com sucesso!");
+      onSuccess?.(savedLesson);
+      if (!lessonId) {
+        router.back();
+      }
+    },
+    onError: (error) => {
+      console.error("Erro ao salvar aula:", error);
+      toast.error("Ocorreu um erro ao salvar a aula. Tente novamente.");
+    },
+  });
 
   const form = useForm<LessonFormData>({
     resolver: zodResolver(lessonSchema),
-    defaultValues: mockLesson,
+    defaultValues: {
+      title: "",
+      description: "",
+      status: "draft",
+      order: 1,
+      video_url: "",
+      duration: 30,
+    },
   });
 
-  const handleSubmit = async (data: LessonFormData) => {
-    setIsLoading(true);
-    console.log("Enviando:", data);
-    await sleep(2000);
-    setLessons((prev) => [
-      ...prev,
-      {
-        ...data,
-        id: Math.floor(Math.random() * 100000),
-        course_id: courseId,
-        creator_id: creatorId,
-      },
-    ]);
-    setIsOpen(false);
-    setIsLoading(false);
+  useEffect(() => {
+    if (existingLesson) {
+      form.reset({
+        title: existingLesson.title,
+        description: existingLesson.description,
+        status: existingLesson.status,
+        order: existingLesson.order,
+        video_url: existingLesson.video_url,
+        duration: existingLesson.duration,
+      });
+    }
+  }, [existingLesson, form]);
+
+  const handleSubmit = (data: LessonFormData) => {
+    saveLesson(data);
   };
 
   const handleCancel = () => {
     router.back();
   };
+
+  if (isLoadingLesson) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -79,15 +120,18 @@ export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormP
                 <Input
                   {...field}
                   placeholder="Ex: Introdução aos Hooks"
-                  disabled={isLoading}
-                  className={`h-12 bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 ${
+                  disabled={isSaving || isLoadingLesson}
+                  className={`h-12 bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 transition-all duration-200 ${
                     fieldState.error
-                      ? "border-red-500/50 focus:border-red-400"
-                      : "border-gray-700/50 focus:border-green-500/50"
+                      ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
+                      : "border-gray-700/50 focus:border-green-500/50 focus:ring-green-500/20 hover:border-gray-600/50"
                   }`}
                 />
               </FormControl>
-              <FormMessage />
+              <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                <FormMessage />
+              </div>
+              <p className="text-xs text-gray-500">Mínimo de 3 caracteres</p>
             </FormItem>
           )}
         />
@@ -105,13 +149,23 @@ export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormP
                 <Textarea
                   {...field}
                   placeholder="Detalhes da aula..."
-                  disabled={isLoading}
-                  className={`min-h-[100px] bg-black/40 backdrop-blur-sm border-2 text-white ${
-                    fieldState.error ? "border-red-500/50" : "border-gray-700/50 focus:border-green-500/50"
+                  disabled={isSaving || isLoadingLesson}
+                  className={`min-h-[120px] bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 transition-all duration-200 resize-none ${
+                    fieldState.error
+                      ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
+                      : "border-gray-700/50 focus:border-green-500/50 focus:ring-green-500/20 hover:border-gray-600/50"
                   }`}
                 />
               </FormControl>
-              <FormMessage />
+              <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                <FormMessage />
+              </div>
+              <p className="text-xs text-gray-500">
+                {field.value?.length || 0}/1000 caracteres
+                {(field.value?.length ?? 0) > 900 && (
+                  <span className="text-yellow-400 ml-2">({1000 - (field.value?.length ?? 0)} restantes)</span>
+                )}
+              </p>
             </FormItem>
           )}
         />
@@ -120,18 +174,41 @@ export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormP
           <FormField
             control={form.control}
             name="status"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <FormItem>
-                <FormLabel className="text-amber-50">Status</FormLabel>
+                <FormLabel className="flex items-center gap-2 text-amber-50">
+                  <Clock className="h-4 w-4 text-green-400" />
+                  Status
+                </FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="published | draft | archived"
-                    disabled={isLoading}
-                    className="h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-700 text-white"
-                  />
+                  <div className="relative">
+                    <select
+                      {...field}
+                      disabled={isSaving || isLoadingLesson}
+                      className={`h-12 w-full bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 transition-all duration-200 appearance-none pl-3 pr-8 rounded-md ${
+                        fieldState.error
+                          ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
+                          : "border-gray-700/50 focus:border-green-500/50 focus:ring-green-500/20 hover:border-gray-600/50"
+                      }`}
+                    >
+                      <option value="draft">Rascunho</option>
+                      <option value="published">Publicado</option>
+                      <option value="archived">Arquivado</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </div>
                 </FormControl>
-                <FormMessage />
+                <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
@@ -139,23 +216,35 @@ export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormP
           <FormField
             control={form.control}
             name="order"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2 text-amber-50">
-                  <Hash className="h-4 w-4 text-green-400" />
-                  Ordem
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    disabled={isLoading}
-                    className="h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-700 text-white"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field, fieldState }) => {
+              const value = Number(field.value) || 1;
+              return (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2 text-amber-50">
+                    <Hash className="h-4 w-4 text-green-400" />
+                    Ordem
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      min={1}
+                      value={value}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                      disabled={isSaving || isLoadingLesson}
+                      className={`h-12 bg-black/40 backdrop-blur-sm border-2 text-white transition-all duration-200 ${
+                        fieldState.error
+                          ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
+                          : "border-gray-700/50 focus:border-green-500/50 focus:ring-green-500/20 hover:border-gray-600/50"
+                      }`}
+                    />
+                  </FormControl>
+                  <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              );
+            }}
           />
         </div>
 
@@ -163,7 +252,7 @@ export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormP
           <FormField
             control={form.control}
             name="video_url"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2 text-amber-50">
                   <Video className="h-4 w-4 text-green-400" />
@@ -173,11 +262,18 @@ export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormP
                   <Input
                     {...field}
                     placeholder="https://youtube.com/..."
-                    disabled={isLoading}
-                    className="h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-700 text-white"
+                    disabled={isSaving || isLoadingLesson}
+                    className={`h-12 bg-black/40 backdrop-blur-sm border-2 text-white placeholder:text-gray-500 transition-all duration-200 ${
+                      fieldState.error
+                        ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
+                        : "border-gray-700/50 focus:border-green-500/50 focus:ring-green-500/20 hover:border-gray-600/50"
+                    }`}
                   />
                 </FormControl>
-                <FormMessage />
+                <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                  <FormMessage />
+                </div>
+                <p className="text-xs text-gray-500">Cole a URL do vídeo (YouTube, Vimeo, etc.)</p>
               </FormItem>
             )}
           />
@@ -185,23 +281,41 @@ export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormP
           <FormField
             control={form.control}
             name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2 text-amber-50">
-                  <Clock className="h-4 w-4 text-red-400" />
-                  Duração (min)
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    disabled={isLoading}
-                    className="h-12 bg-black/40 backdrop-blur-sm border-2 border-gray-700 text-white"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field, fieldState }) => {
+              const value = Number(field.value) || 30;
+              return (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2 text-amber-50">
+                    <Clock className="h-4 w-4 text-red-400" />
+                    Duração (min)
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        type="number"
+                        min={1}
+                        max={240}
+                        value={value}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 30)}
+                        disabled={isSaving || isLoadingLesson}
+                        className={`h-12 bg-black/40 backdrop-blur-sm border-2 text-white transition-all duration-200 ${
+                          fieldState.error
+                            ? "border-red-500/50 focus:border-red-400 focus:ring-red-500/20"
+                            : "border-gray-700/50 focus:border-green-500/50 focus:ring-green-500/20 hover:border-gray-600/50"
+                        }`}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-gray-400 text-sm">min</span>
+                      </div>
+                    </div>
+                  </FormControl>
+                  <div className="min-h-[1.25rem] mt-1 text-red-500 text-sm">
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              );
+            }}
           />
         </div>
 
@@ -210,25 +324,25 @@ export const LessonForm = ({ courseId, creatorId, setLessons, setIsOpen }: FormP
             type="button"
             variant="outline"
             onClick={handleCancel}
-            disabled={isLoading}
-            className="flex-1 h-12 border-gray-700 text-gray-300 bg-transparent"
+            disabled={isSaving || isLoadingLesson}
+            className="flex-1 h-12 border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
-            disabled={isLoading}
-            className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 text-black"
+            disabled={isSaving || isLoadingLesson}
+            className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-black font-semibold shadow-lg shadow-green-500/25 transition-all duration-200"
           >
-            {isLoading ? (
+            {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Salvando...
+                {lessonId ? "Salvando..." : "Criando..."}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-5 w-5" />
-                Salvar Aula
+                {lessonId ? "Salvar Alterações" : "Criar Aula"}
               </>
             )}
           </Button>

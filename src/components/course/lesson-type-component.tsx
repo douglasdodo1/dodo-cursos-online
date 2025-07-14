@@ -113,7 +113,6 @@ export const LessonTypeComponent = ({
             setIsOpen={setIsOpenLessonCreateModal}
             courseId={course.id}
             creatorId={0}
-            setLessons={setPaginatedLessons}
           />
         ) : (
           <div></div>
